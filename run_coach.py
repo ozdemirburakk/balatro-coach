@@ -73,19 +73,24 @@ def _name(card: dict, by_id: dict) -> str:
     return item["name"] if item else card.get("name") or card.get("key", "Bilinmiyor")
 
 
-def _main_hand(state: dict) -> str:
-    hands = state.get("hands") or {}
-    scoring = {name: 2 * (data.get("level", 1) - 1) + data.get("played", 0)
-               for name, data in hands.items() if isinstance(data, dict)}
-    ranked = sorted(scoring, key=scoring.get, reverse=True)
-    if ranked and scoring[ranked[0]] > 0:
-        return ranked[0]
+def _hand_plan(state: dict) -> tuple[str | None, str]:
+    hands = {name: data for name, data in (state.get("hands") or {}).items()
+             if name in HAND_BASE and isinstance(data, dict)}
+    leveled = [(name, data) for name, data in hands.items() if int(data.get("level") or 1) > 1]
+    if leveled:
+        name, data = max(leveled, key=lambda pair: (int(pair[1].get("level") or 1), int(pair[1].get("played") or 0)))
+        return name, f"{HAND_LABELS[name]} eli seviye {data['level']} olduğu için öne çıkıyor."
     joker_keys = {c.get("key") for c in state.get("jokers", [])}
     if "j_wily" in joker_keys or "j_zany" in joker_keys:
-        return "Three of a Kind"
+        return "Three of a Kind", "Üçlüye bonus veren Joker'ın var; bu bir oyun planı önerisi."
     if "j_jolly" in joker_keys or "j_sly" in joker_keys:
-        return "Pair"
-    return "Pair"
+        return "Pair", "Çifte bonus veren Joker'ın var; bu bir oyun planı önerisi."
+    played = sorted(((name, int(data.get("played") or 0)) for name, data in hands.items()),
+                    key=lambda pair: pair[1], reverse=True)
+    if played and played[0][1] >= 3 and (len(played) == 1 or played[0][1] >= played[1][1] + 2):
+        name, count = played[0]
+        return name, f"{HAND_LABELS[name]} elini {count} kez oynadığın için öne çıkıyor."
+    return None, "Henüz belirlenmedi. İlk elde otomatik olarak çift hedefi seçilmiyor."
 
 
 def _hand_type(cards: list[dict]) -> str:
@@ -144,7 +149,7 @@ def _base_score(cards: list[dict], hand: str, hands: dict) -> dict:
     return {"chips": chips, "mult": mult, "score": int(chips * mult)}
 
 
-def _choose_hand(state: dict, main_hand: str) -> dict | None:
+def _choose_hand(state: dict, main_hand: str | None) -> dict | None:
     cards = state.get("hand_cards") or []
     if not cards:
         return None
@@ -169,7 +174,7 @@ def _choose_hand(state: dict, main_hand: str) -> dict | None:
     return {"hand": hand, "selection": selection, **estimate}
 
 
-def _discard_plan(state: dict, main_hand: str, candidate: dict) -> list[dict]:
+def _discard_plan(state: dict, main_hand: str | None, candidate: dict) -> list[dict]:
     cards = state.get("hand_cards") or []
     if not cards or int(state.get("discards_left") or 0) < 1:
         return []
@@ -202,13 +207,14 @@ def guide(state: dict) -> dict:
     by_id = {item["id"]: item for item in BY_NAME.values()}
     stage = state.get("stage", "")
     deck = by_id.get(state.get("deck", ""), {}).get("name", state.get("deck", "Bilinmiyor"))
-    main_hand = _main_hand(state)
+    main_hand, plan_reason = _hand_plan(state)
     money = int(state.get("money", 0))
     jokers = [_name(card, by_id) for card in state.get("jokers", [])]
     base = {"deck": deck, "stage": stage, "ante": state.get("ante"), "money": money,
             "blind": state.get("blind") or {}, "hands_left": state.get("hands_left", 0),
             "discards_left": state.get("discards_left", 0), "jokers": jokers,
-            "main_hand": main_hand, "shop": [], "next": "", "detail": "", "score": None,
+            "main_hand": main_hand, "plan_reason": plan_reason,
+            "shop": [], "next": "", "detail": "", "score": None,
             "chips_scored": state.get("chips_scored", 0)}
     if stage == "SHOP":
         cards = state.get("shop_cards", []) + state.get("shop_vouchers", [])
@@ -228,10 +234,12 @@ def guide(state: dict) -> dict:
                 score = -1000
             elif known.get("category") == "Joker":
                 score = 5
-                if known.get("hand") == main_hand:
-                    score += 4; reasons.append(f"{main_hand} ile uyumlu")
-                elif known.get("hand"):
+                if main_hand and known.get("hand") == main_hand:
+                    score += 4; reasons.append(f"{HAND_LABELS[main_hand]} ile uyumlu")
+                elif main_hand and known.get("hand"):
                     score -= 5; reasons.append(f"{known['hand']} gerektirir")
+                elif known.get("hand"):
+                    reasons.append(f"{known['hand']} eline bonus verir; el planı henüz net değil")
                 if "mult" in tags and not have_mult:
                     score += 5; reasons.append("+Mult ihtiyacı")
                 if "chips" in tags and not have_chips:
@@ -243,7 +251,7 @@ def guide(state: dict) -> dict:
                 if name in jokers:
                     score -= 2; reasons.append("aynı Joker zaten var")
             elif known.get("category") == "Planet":
-                score = 6 if known.get("hand") == main_hand else 0
+                score = 6 if main_hand and known.get("hand") == main_hand else 0
                 reasons.append(f"{known.get('hand', '?')} seviyesini artırır")
             elif known.get("category") == "Voucher":
                 score = 6 if name in ("Overstock", "Overstock Plus") and int(state.get("ante") or 1) <= 4 else 3
