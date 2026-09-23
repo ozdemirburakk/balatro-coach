@@ -43,6 +43,28 @@ local function card_info(card)
     if not card then return nil end
     local center = card.config and card.config.center or {}
     local base = card.base or {}
+    local ability = card.ability or {}
+    local stats = {}
+    for _, key in ipairs({'mult', 'h_mult', 'h_x_mult', 't_mult', 't_chips',
+                          'x_mult', 'bonus', 'perma_bonus'}) do
+        if type(ability[key]) == 'number' then stats[key] = ability[key] end
+    end
+    if type(ability.extra) == 'number' then
+        stats.extra = ability.extra
+    elseif type(ability.extra) == 'table' then
+        stats.extra = {}
+        for _, key in ipairs({'chips', 'mult', 'Xmult', 'x_mult', 'chip_mod'}) do
+            if type(ability.extra[key]) == 'number' then
+                stats.extra[key] = ability.extra[key]
+            end
+        end
+    end
+    local edition_stats = {}
+    if card.edition then
+        for _, key in ipairs({'chips', 'mult', 'x_mult'}) do
+            if type(card.edition[key]) == 'number' then edition_stats[key] = card.edition[key] end
+        end
+    end
     return {
         key = center.key or '',
         name = center.name or card.ability and card.ability.name or '',
@@ -54,7 +76,9 @@ local function card_info(card)
         rank = base.value or '',
         suit = base.suit or '',
         edition = card.edition and (card.edition.type or '') or '',
+        edition_stats = edition_stats,
         enhancement = card.ability and card.ability.name or '',
+        stats = stats,
         seal = card.seal or '',
         debuffed = card.debuff or false,
         eternal = card.ability and card.ability.eternal or false,
