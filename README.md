@@ -12,14 +12,14 @@ Balatro koşusunu izleyen Türkçe, yerel yardımcı. Deck, ante, para, mevcut J
    ```bash
    cd ~/Developer/balatro-coach
    git pull
-   python install_mod.py
+   python3 install_mod.py
    ```
 
 3. Balatro'yu modlu biçimde yeniden başlat ve bir koşu aç. Ayrı bir terminalde:
 
    ```bash
    cd ~/Developer/balatro-coach
-   python coach.py
+   python3 coach.py
    ```
 
 Tarayıcıda açılan sayfanın üstündeki **Canlı koşu** bölümü deck ve oyun durumunu gösterir. Tarayıcı açılmazsa terminalde yazan `http://127.0.0.1:...` adresine git. Terminal açık kalmalı; kapatmak için Ctrl+C.
