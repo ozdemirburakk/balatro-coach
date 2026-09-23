@@ -67,7 +67,10 @@
 const token="__TOKEN__";
 let catalog=[];
 const $=id=>document.getElementById(id);
-const stages={SELECTING_HAND:"Kart seçimi",SHOP:"Mağaza",BLIND_SELECT:"Blind seçimi"};
+const stages={SELECTING_HAND:"Kart seçimi",SHOP:"Mağaza",BLIND_SELECT:"Blind seçimi",
+  ROUND_EVAL:"Ödül ekranı",GAME_OVER:"Koşu bitti",
+  PLANET_PACK:"Celestial paket",TAROT_PACK:"Arcana paket",SPECTRAL_PACK:"Spectral paket",
+  BUFFOON_PACK:"Buffoon paket",STANDARD_PACK:"Standard paket",SMODS_BOOSTER_OPENED:"Paket açık"};
 async function refreshLive(){
   try{
     const response=await fetch("/state",{cache:"no-store"});const data=await response.json();
@@ -97,6 +100,14 @@ async function refreshLive(){
       const caveat=document.createElement("p");caveat.className="muted";
       caveat.textContent="Taban puan tahminidir; Joker, geliştirme, edition, seal ve boss etkileri dahil değildir. Oyundaki skor farklı olabilir.";
       target.append(caveat);
+    }
+    if(g.pack_options?.length){const title=document.createElement("h4");title.textContent="Pakette görünen kartlar";target.append(title);
+      for(const option of g.pack_options){
+        const row=document.createElement("div");row.className="result";
+        const heading=document.createElement("strong");heading.textContent=option.index+". "+option.name;
+        const reason=document.createElement("p");reason.textContent=option.reason;
+        row.append(heading,reason);target.append(row);
+      }
     }
     if(g.shop.length){const title=document.createElement("h4");title.textContent="Shop";target.append(title);
       for(const item of g.shop){
