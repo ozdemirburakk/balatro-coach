@@ -19,7 +19,7 @@ def main() -> None:
     for name in ("main.lua", "balatro_coach.json"):
         shutil.copy2(source / name, target / name)
     print(f"Balatro Coach köprüsü yüklendi: {target}")
-    print("Balatro'yu modlu biçimde yeniden başlat. Ardından python coach.py çalıştır.")
+    print("Balatro'yu modlu biçimde yeniden başlat. Ardından Mac'te python3 coach.py çalıştır.")
 
 
 if __name__ == "__main__":
