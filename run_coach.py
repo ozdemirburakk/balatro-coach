@@ -29,6 +29,11 @@ HAND_LABELS = {
     "Full House": "Ful", "Four of a Kind": "Kare", "Straight Flush": "Sıralı renk",
     "Five of a Kind": "Beşli", "Flush House": "Renkli ful", "Flush Five": "Renkli beşli",
 }
+PACK_STAGES = {
+    "PLANET_PACK": "Celestial", "TAROT_PACK": "Arcana",
+    "SPECTRAL_PACK": "Spectral", "BUFFOON_PACK": "Buffoon",
+    "STANDARD_PACK": "Standard", "SMODS_BOOSTER_OPENED": "Unknown",
+}
 
 
 def default_state_file() -> Path:
@@ -202,6 +207,168 @@ def _discard_plan(state: dict, main_hand: str | None, candidate: dict) -> list[d
             for i in range(len(cards)) if i not in keep][:5]
 
 
+def _joker_value(card: dict, state: dict, by_id: dict, main_hand: str | None) -> tuple[int, str]:
+    known = by_id.get(card.get("key"), {})
+    owned = state.get("jokers") or []
+    limit = int(state.get("joker_slots") or 0)
+    if limit and len(owned) >= limit:
+        return -100, "Joker slotu dolu; önce mevcut Joker'lardan biri için ayrı karar gerekir."
+    if card.get("key") in {item.get("key") for item in owned}:
+        return 3, "Bu Joker zaten sende; ikinci kopyanın değeri etkisine bağlı."
+    tags = set(known.get("tags") or [])
+    owned_tags = [set(by_id.get(item.get("key"), {}).get("tags") or []) for item in owned]
+    score = 5
+    reasons = []
+    if main_hand and known.get("hand") == main_hand:
+        score += 5; reasons.append(f"{HAND_LABELS[main_hand]} elini destekliyor")
+    elif main_hand and known.get("hand"):
+        score -= 3; reasons.append("mevcut el eğilimiyle uyuşmuyor")
+    if "mult" in tags and not any("mult" in role for role in owned_tags):
+        score += 4; reasons.append("Mult ihtiyacını karşılayabilir")
+    if "chips" in tags and not any("chips" in role for role in owned_tags):
+        score += 3; reasons.append("chip desteği verebilir")
+    if "xmult" in tags and any("mult" in role for role in owned_tags):
+        score += 3; reasons.append("mevcut Mult ile çarpan uyumu")
+    if "scaling" in tags and int(state.get("ante") or 1) <= 3:
+        score += 2; reasons.append("erken aşamada büyüyebilir")
+    return score, ", ".join(reasons) if reasons else "Joker etkisini oyun tooltip'inden doğrula."
+
+
+def _card_targets(cards: list[dict], count: int, strongest: bool = False,
+                  allowed: set[int] | None = None) -> str:
+    def value(card: dict) -> int:
+        return (RANK_CHIPS.get(card.get("rank"), 0) + 12 * bool(card.get("seal"))
+                + 10 * bool(card.get("edition"))
+                + 6 * (card.get("enhancement") not in (None, "", "Default Base", "Base Card")))
+    indexed = sorted(((i, card) for i, card in enumerate(cards) if allowed is None or i in allowed),
+                     key=lambda pair: value(pair[1]), reverse=strongest)
+    chosen = indexed[:count]
+    return ", ".join(f"{i + 1}. {_card_label(card)}" for i, card in chosen)
+
+
+def _pack_option(card: dict, state: dict, by_id: dict, main_hand: str | None) -> tuple[int, str, str]:
+    """Return a relative score, a concise reason and any follow-up card target."""
+    key = card.get("key", "")
+    known = by_id.get(key, {})
+    kind = known.get("category") or card.get("set")
+    hands = state.get("hands") or {}
+    money = int(state.get("money") or 0)
+    free_joker = not state.get("joker_slots") or len(state.get("jokers") or []) < int(state["joker_slots"])
+    playing = state.get("hand_cards") or []
+    if kind == "Planet":
+        hand = known.get("hand")
+        if not hand:
+            return -10, "Bu gezegenin geliştirdiği el bilinmiyor.", ""
+        data = hands.get(hand) or {}
+        level = int(data.get("level") or 1)
+        played = int(data.get("played") or 0)
+        score = 4 + min(8, played * 2) + min(8, (level - 1) * 4)
+        if hand == main_hand:
+            score += 10
+        if not main_hand and not played:
+            score += {"Pair": 3, "High Card": 2, "Two Pair": 1}.get(hand, -1)
+        reason = f"{HAND_LABELS[hand]} elini seviye {level + 1} yapar"
+        if not main_hand and not played:
+            reason += "; kalıcı bir el hedefi belirlenmiş değil"
+        return score, reason, ""
+    if kind == "Joker":
+        score, reason = _joker_value(card, state, by_id, main_hand)
+        return score, reason, ""
+    if kind == "Tarot":
+        if key == "c_hermit":
+            gain = min(20, money)
+            return (5 + gain // 4 if gain else -10), f"yaklaşık ${gain} kazandırır", ""
+        if key == "c_temperance":
+            gain = min(50, sum(int(c.get("sell_cost") or 0) for c in state.get("jokers") or []))
+            return (5 + gain // 5 if gain else -10), f"mevcut Joker satış değerlerinden ${gain} kazandırır", ""
+        if key == "c_high_priestess":
+            return 8, "iki gezegen kartı verir; hangi eller geldiği rastgeledir", ""
+        if key == "c_emperor":
+            return 7, "iki Tarot kartı verir; etkileri açılınca görünür", ""
+        if key == "c_judgement":
+            return (8 if free_joker else -100), "rastgele Joker verir" if free_joker else "Joker slotun dolu", ""
+        if key == "c_fool":
+            last = state.get("last_tarot_planet")
+            return (8 if last and last != "c_fool" else -10), "son kullanılan Tarot/gezegeni tekrar verir" if last else "tekrarlanacak kart bilgisi yok", ""
+        if key == "c_hanged_man" and len(playing) >= 2:
+            safe = {i for i, c in enumerate(playing) if RANK_CHIPS.get(c.get("rank"), 10) <= 8
+                    and not c.get("seal") and not c.get("edition")
+                    and c.get("enhancement") in (None, "", "Default Base", "Base Card")}
+            if len(safe) >= 2:
+                return 7, "zayıf iki kartı desteden çıkarır", _card_targets(playing, 2, allowed=safe)
+            return -10, "Güvenle yok edilecek iki zayıf kart görünmüyor.", ""
+        # These effects need a target playing card after taking the Tarot.
+        targets = {"c_chariot": (1, False), "c_devil": (1, False),
+                   "c_empress": (2, True), "c_heirophant": (2, True),
+                   "c_lovers": (1, False), "c_magician": (2, True),
+                   "c_star": (3, False), "c_moon": (3, False),
+                   "c_sun": (3, False), "c_world": (3, False),
+                   "c_strength": (2, False)}
+        if key in targets and playing:
+            count, strong = targets[key]
+            return 4, "oyun kartını geliştirir; hedef seçimini oyundaki etkiye göre doğrula", _card_targets(playing, min(count, len(playing)), strong)
+        return -10, "Hedef/etkiyi güvenle değerlendirmek için yeterli veri yok.", ""
+    if kind == "Spectral":
+        if key == "c_soul":
+            return (20 if free_joker else -100), "efsanevi Joker verir" if free_joker else "Joker slotun dolu", ""
+        if key == "c_black_hole":
+            return 16, "tüm poker ellerini bir seviye yükseltir", ""
+        if key == "c_ankh":
+            count = len(state.get("jokers") or [])
+            return (9 if count == 1 else -10), "tek Joker'ını kopyalar" if count == 1 else "rastgele bir Joker'ı kopyalarken diğerlerini yok edebilir", ""
+        if key in ("c_cryptid", "c_aura", "c_deja_vu", "c_medium", "c_trance", "c_talisman") and playing:
+            return 7, "oyun kartına kopya, edition veya seal uygular", _card_targets(playing, 1, True)
+        return -10, "Etkisi deste veya Joker'ları değiştirebilir; güvenilir seçim yapamıyorum.", ""
+    if kind in ("Default", "Enhanced", "Playing Card") or card.get("rank"):
+        if card.get("seal"):
+            return 8, f"{card['seal']} seal taşıyan kartı desteye ekler", ""
+        if card.get("edition"):
+            return 7, "edition taşıyan kartı desteye ekler", ""
+        if card.get("enhancement") and card["enhancement"] not in ("Default Base", "Base Card"):
+            return 6, "geliştirilmiş kartı desteye ekler", ""
+        return -1, "normal kartı eklemek desteyi büyütür", ""
+    return -10, "Bu kartın etkisi henüz tanınmıyor.", ""
+
+
+def _pack_guidance(state: dict, base: dict, by_id: dict, main_hand: str | None) -> None:
+    pack = state.get("pack_cards") or []
+    if not pack:
+        base["next"] = "Paket kartları açılıyor; seçenekler görünmesini bekle."
+        base["detail"] = "Kartlar oyunda görünür görünmez seçimi güncelleyeceğim."
+        return
+    options = []
+    for index, card in enumerate(pack, 1):
+        score, reason, target = _pack_option(card, state, by_id, main_hand)
+        label = _card_label(card) if card.get("rank") else _name(card, by_id)
+        options.append({"index": index, "name": label, "value": score,
+                        "reason": reason, "target": target})
+    options.sort(key=lambda item: item["value"], reverse=True)
+    base["pack_options"] = options
+    best = options[0]
+    if best["value"] < 0:
+        base["next"] = "Paketi 'Skip' ile geç."
+        base["detail"] = "Görünen seçeneklerden güvenle önerebileceğim bir kart yok. " + best["reason"]
+        return
+    base["next"] = f"Pakette {best['index']}. {best['name']} kartını seç."
+    if best["target"]:
+        base["next"] += f" Sonraki seçimde {best['target']} kartını hedefle."
+    base["detail"] = best["reason"] + (" Birden fazla seçim varsa ilkinden sonra seçenekleri yeniden değerlendireceğim."
+                                      if int(state.get("pack_choices") or 0) > 1 else "")
+
+
+def _ready_consumable(state: dict, by_id: dict, main_hand: str | None) -> tuple[str, str] | None:
+    for index, card in enumerate(state.get("consumables") or [], 1):
+        key = card.get("key")
+        known = by_id.get(key, {})
+        if known.get("category") == "Planet" and main_hand and known.get("hand") == main_hand:
+            return f"Tüketilebilirlerde {index}. {_name(card, by_id)} kartını kullan.", f"{HAND_LABELS[main_hand]} elini güçlendirir."
+        if key in ("c_hermit", "c_temperance", "c_black_hole"):
+            value, reason, _ = _pack_option(card, state, by_id, main_hand)
+            if value >= 6:
+                return f"Tüketilebilirlerde {index}. {_name(card, by_id)} kartını kullan.", reason
+    return None
+
+
 def guide(state: dict) -> dict:
     from coach import BY_NAME, interest
     by_id = {item["id"]: item for item in BY_NAME.values()}
@@ -214,48 +381,34 @@ def guide(state: dict) -> dict:
             "blind": state.get("blind") or {}, "hands_left": state.get("hands_left", 0),
             "discards_left": state.get("discards_left", 0), "jokers": jokers,
             "main_hand": main_hand, "plan_reason": plan_reason,
-            "shop": [], "next": "", "detail": "", "score": None,
+            "shop": [], "pack_options": [], "next": "", "detail": "", "score": None,
             "chips_scored": state.get("chips_scored", 0)}
-    if stage == "SHOP":
+    if stage in PACK_STAGES:
+        _pack_guidance(state, base, by_id, main_hand)
+    elif stage == "SHOP":
         cards = state.get("shop_cards", []) + state.get("shop_vouchers", [])
-        roles = [by_id.get(card.get("key", ""), {}).get("tags", []) for card in state.get("jokers", [])]
-        have_mult = any("mult" in r for r in roles)
-        have_chips = any("chips" in r for r in roles)
         candidates = []
         for card in cards:
             known = by_id.get(card.get("key", ""), {})
             name = _name(card, by_id)
             price = int(card.get("cost") or 0)
-            tags = known.get("tags", [])
             score = 0
             reasons = []
             if price > money:
                 reasons.append("Para yetmiyor.")
                 score = -1000
             elif known.get("category") == "Joker":
-                score = 5
-                if main_hand and known.get("hand") == main_hand:
-                    score += 4; reasons.append(f"{HAND_LABELS[main_hand]} ile uyumlu")
-                elif main_hand and known.get("hand"):
-                    score -= 5; reasons.append(f"{known['hand']} gerektirir")
-                elif known.get("hand"):
-                    reasons.append(f"{known['hand']} eline bonus verir; el planı henüz net değil")
-                if "mult" in tags and not have_mult:
-                    score += 5; reasons.append("+Mult ihtiyacı")
-                if "chips" in tags and not have_chips:
-                    score += 3; reasons.append("chip ihtiyacı")
-                if "scaling" in tags and int(state.get("ante") or 1) <= 3:
-                    score += 2; reasons.append("erken büyüme")
-                if "xmult" in tags and have_mult:
-                    score += 2; reasons.append("mevcut Mult ile çarpan")
-                if name in jokers:
-                    score -= 2; reasons.append("aynı Joker zaten var")
+                score, reason = _joker_value(card, state, by_id, main_hand)
+                reasons.append(reason)
             elif known.get("category") == "Planet":
-                score = 6 if main_hand and known.get("hand") == main_hand else 0
-                reasons.append(f"{known.get('hand', '?')} seviyesini artırır")
+                score = 9 if main_hand and known.get("hand") == main_hand else 2
+                reasons.append(f"{HAND_LABELS.get(known.get('hand'), '?')} elinin seviyesini artırır")
             elif known.get("category") == "Voucher":
-                score = 6 if name in ("Overstock", "Overstock Plus") and int(state.get("ante") or 1) <= 4 else 3
+                score = 8 if name in ("Overstock", "Overstock Plus") and int(state.get("ante") or 1) <= 4 else 3
                 reasons.append("voucher etkisini oyunda doğrula")
+            elif known.get("category") in ("Tarot", "Spectral"):
+                score, reason, _ = _pack_option(card, state, by_id, main_hand)
+                reasons.append(reason)
             else:
                 reasons.append("etki veya içerik bilgisi eksik")
             if money - price < 0:
@@ -264,18 +417,60 @@ def guide(state: dict) -> dict:
                 score -= 2
                 reasons.append("faiz eşiği düşer")
             candidates.append({"name": name, "price": price, "score": score, "reasons": reasons})
+        for card in state.get("shop_boosters") or []:
+            name = card.get("name") or "Booster Pack"
+            price = int(card.get("cost") or 0)
+            kind = card.get("kind") or ""
+            if price > money:
+                score, reasons = -1000, ["Para yetmiyor."]
+            elif kind == "Buffoon":
+                slots = int(state.get("joker_slots") or 0)
+                has_room = not slots or len(state.get("jokers") or []) < slots
+                score = 8 if has_room and len(state.get("jokers") or []) < 3 else (5 if has_room else -100)
+                reasons = ["Açınca Joker seçeneklerine bakacağım." if has_room else "Joker slotu dolu."]
+            elif kind == "Celestial":
+                score = 9 if main_hand or money - price >= 20 else 4
+                reasons = ["Gezegenler açılınca hangi elin gelişeceğini göreceğim."]
+            elif kind == "Arcana":
+                score, reasons = 5, ["Tarot seçenekleri açılınca etkilerine bakacağım."]
+            elif kind == "Spectral":
+                score, reasons = 4, ["Etkiler riskli olabilir; açılınca kartları değerlendireceğim."]
+            elif kind == "Standard":
+                score, reasons = 2, ["İçindeki kartlar bilinmiyor; desteyi büyütmenin maliyeti var."]
+            else:
+                score, reasons = -5, ["Paket türü henüz tanınmıyor."]
+            if score > 0 and money >= 15 and interest(money - price) < interest(money):
+                score -= 2
+                reasons.append("Satın alınca faiz eşiği düşer.")
+            candidates.append({"name": name, "price": price, "score": score,
+                               "reasons": reasons, "kind": "pack"})
         candidates.sort(key=lambda c: c["score"], reverse=True)
         base["shop"] = candidates
         chosen = next((c for c in candidates if c["score"] >= 7), None)
         if chosen:
-            base["next"] = f"{chosen['name']} için AL seçeneğini değerlendir (${chosen['price']})."
-            base["detail"] = "Önce oyun tooltip'ini, Joker slotunu ve bu blind'a yetecek skoru kontrol et."
+            if chosen.get("kind") == "pack":
+                base["next"] = f"{chosen['name']} için ${chosen['price']} ödeyip paketi aç."
+                base["detail"] = "Paket içeriği açılınca hangi kartı seçeceğini ayrıca söyleyeceğim. " + " ".join(chosen["reasons"])
+            else:
+                base["next"] = f"{chosen['name']} kartını ${chosen['price']} ödeyip satın al."
+                base["detail"] = " ".join(chosen["reasons"]) or "Kart etkisini oyunda doğrula."
         else:
-            base["next"] = "Shop'u geçip sonraki blind'a ilerlemeyi değerlendir."
-            base["detail"] = "Mevcut ürünler için yeterli bağlamsal avantaj bulunamadı; paket içeriği görünmeden kesin öneri veremem."
+            reroll = int(state.get("reroll_cost") or 0)
+            if reroll > 0 and money - reroll >= 15 and candidates:
+                base["next"] = f"Shop'ta ${reroll} ödeyip bir kez Reroll yap."
+                base["detail"] = "Görünen ürünler şu an güçlü görünmüyor; yeni ürünler gelince yeniden bakacağım."
+            else:
+                base["next"] = "Shop'tan çık ve sonraki blind'a ilerle."
+                base["detail"] = "Bu bütçeyle görünen ürünlerden güçlü bir satın alma önerisi çıkaramıyorum."
     elif stage == "BLIND_SELECT":
-        base["next"] = "Blind'ı seç ve oynayarak ekonomi kur."
-        base["detail"] = "Skip tag ve yaklaşan boss'u ayrıca kontrol et; mevcut durumda skip değerini hesaplayamıyorum."
+        base["next"] = "Sıradaki blind'ı seç ve oyna."
+        base["detail"] = "Skip ödülünün değerini henüz hesaplayamıyorum; bir sonraki ekranda kartları okuyacağım."
+    elif stage == "ROUND_EVAL":
+        base["next"] = "Cash Out düğmesine bas; ardından shop ürünlerine birlikte bakacağız."
+        base["detail"] = "Ödül ve faiz tutarını oyundaki ekranda kontrol et."
+    elif stage == "GAME_OVER":
+        base["next"] = "Koşu bitti; yeni koşu başlat."
+        base["detail"] = "Yeni deck ve Joker'ları gördüğümde öneriyi sıfırdan oluşturacağım."
     elif stage == "SELECTING_HAND":
         candidate = _choose_hand(state, main_hand)
         base["candidate"] = candidate
@@ -301,4 +496,8 @@ def guide(state: dict) -> dict:
     else:
         base["next"] = "Oyun aşaması değişiyor veya paket açık; sonraki kararı bekle."
         base["detail"] = "Bu aşama için güvenilir otomatik eylem hesaplanmıyor."
+    if stage in ("SHOP", "BLIND_SELECT"):
+        ready = _ready_consumable(state, by_id, main_hand)
+        if ready:
+            base["next"], base["detail"] = ready
     return base
