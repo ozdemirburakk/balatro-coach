@@ -10,6 +10,27 @@ from collections import Counter
 from pathlib import Path
 
 
+# Vanilla hand values; the mod supplies the actual level's chips and Mult when available.
+HAND_BASE = {
+    "High Card": (5, 1, 10, 1), "Pair": (10, 2, 15, 1),
+    "Two Pair": (20, 2, 20, 1), "Three of a Kind": (30, 3, 20, 2),
+    "Straight": (30, 4, 30, 3), "Flush": (35, 4, 15, 2),
+    "Full House": (40, 4, 25, 2), "Four of a Kind": (60, 7, 30, 3),
+    "Straight Flush": (100, 8, 40, 4), "Five of a Kind": (120, 12, 35, 3),
+    "Flush House": (140, 14, 40, 4), "Flush Five": (160, 16, 50, 3),
+}
+RANK_CHIPS = {**{str(n): n for n in range(2, 11)},
+              "Jack": 10, "Queen": 10, "King": 10, "Ace": 11}
+RANK_LABELS = {"Jack": "J", "Queen": "Q", "King": "K", "Ace": "A"}
+SUIT_LABELS = {"Spades": "♠", "Hearts": "♥", "Clubs": "♣", "Diamonds": "♦"}
+HAND_LABELS = {
+    "High Card": "Yüksek kart", "Pair": "Çift", "Two Pair": "İki çift",
+    "Three of a Kind": "Üçlü", "Straight": "Kent", "Flush": "Renk",
+    "Full House": "Ful", "Four of a Kind": "Kare", "Straight Flush": "Sıralı renk",
+    "Five of a Kind": "Beşli", "Flush House": "Renkli ful", "Flush Five": "Renkli beşli",
+}
+
+
 def default_state_file() -> Path:
     if custom := os.getenv("BALATRO_COACH_STATE"):
         return Path(custom).expanduser()
@@ -93,7 +114,34 @@ def _hand_type(cards: list[dict]) -> str:
 
 
 def _card_label(card: dict) -> str:
-    return f"{card.get('rank') or '?'} {card.get('suit') or '?'}"
+    rank = card.get("rank") or "?"
+    suit = card.get("suit") or "?"
+    return f"{RANK_LABELS.get(rank, rank)}{SUIT_LABELS.get(suit, suit)}"
+
+
+def _scoring_cards(cards: list[dict], hand: str) -> list[dict]:
+    counts = Counter(card.get("rank") for card in cards)
+    if hand == "High Card":
+        return [max(cards, key=lambda c: RANK_CHIPS.get(c.get("rank"), 0))]
+    if hand == "Pair":
+        return [c for c in cards if counts[c.get("rank")] >= 2][:2]
+    if hand == "Two Pair":
+        return [c for c in cards if counts[c.get("rank")] >= 2][:4]
+    if hand == "Three of a Kind":
+        return [c for c in cards if counts[c.get("rank")] >= 3][:3]
+    if hand == "Four of a Kind":
+        return [c for c in cards if counts[c.get("rank")] >= 4][:4]
+    return cards
+
+
+def _base_score(cards: list[dict], hand: str, hands: dict) -> dict:
+    chips, mult, chips_per_level, mult_per_level = HAND_BASE[hand]
+    data = hands.get(hand) or {}
+    level = max(1, int(data.get("level") or 1))
+    chips = data.get("chips") if isinstance(data.get("chips"), (int, float)) else chips + (level - 1) * chips_per_level
+    mult = data.get("mult") if isinstance(data.get("mult"), (int, float)) else mult + (level - 1) * mult_per_level
+    chips += sum(RANK_CHIPS.get(card.get("rank"), 0) for card in _scoring_cards(cards, hand))
+    return {"chips": chips, "mult": mult, "score": int(chips * mult)}
 
 
 def _choose_hand(state: dict, main_hand: str) -> dict | None:
@@ -102,42 +150,35 @@ def _choose_hand(state: dict, main_hand: str) -> dict | None:
         return None
     if len(cards) > 20:
         return {"note": "Eldeki kart sayısı çok yüksek; el seçimini oyunda yap."}
-    weights = {"High Card": 2, "Pair": 5, "Two Pair": 9, "Three of a Kind": 13,
-               "Straight": 16, "Flush": 16, "Full House": 22, "Four of a Kind": 28,
-               "Straight Flush": 38, "Five of a Kind": 40, "Flush House": 44, "Flush Five": 48}
     best = None
-    owned = {card.get("key") for card in state.get("jokers", [])}
+    hands = state.get("hands") or {}
     for size in range(1, min(5, len(cards)) + 1):
         for indices in itertools.combinations(range(len(cards)), size):
             selected = [cards[i] for i in indices]
             hand = _hand_type(selected)
-            level = (state.get("hands") or {}).get(hand, {}).get("level", 1)
-            bonus = 7 if hand == main_hand else 0
-            if hand == "Three of a Kind" and ("j_wily" in owned or "j_zany" in owned):
-                bonus += 9
-            if hand == "Pair" and ("j_jolly" in owned or "j_sly" in owned):
-                bonus += 5
-            score = weights[hand] + 3 * (level - 1) + bonus - max(0, size - 2) * 0.15
+            estimate = _base_score(selected, hand, hands)
+            # A small preference for the leveled/planned hand when two base scores are close.
+            priority = estimate["score"] * (1.06 if hand == main_hand else 1)
             if any(c.get("debuffed") for c in selected):
-                score -= 4
-            if best is None or score > best[0]:
-                best = (score, hand, indices)
+                priority *= 0.5
+            if best is None or priority > best[0]:
+                best = (priority, hand, indices, estimate)
     assert best is not None
-    _, hand, indices = best
+    _, hand, indices, estimate = best
     selection = [{"index": i + 1, "card": _card_label(cards[i])} for i in indices]
-    return {"hand": hand, "selection": selection,
-            "note": "Bu seçim yaklaşık el gücüne dayanır; Joker tetiklerini, enhancement ve gerçek skoru hesaplamaz."}
+    return {"hand": hand, "selection": selection, **estimate}
 
 
 def _discard_plan(state: dict, main_hand: str, candidate: dict) -> list[dict]:
     cards = state.get("hand_cards") or []
     if not cards or int(state.get("discards_left") or 0) < 1:
         return []
-    # Preserve an already available strong hand; only recommend a speculative
-    # discard when the target hand is not yet available.
-    if candidate["hand"] not in ("High Card", "Pair", "Two Pair"):
+    # Preserve a ready scoring hand. If the blind needs more points, draw toward
+    # high pairs or the planned flush instead of throwing away every non-Ace.
+    blind_left = max(0, int((state.get("blind") or {}).get("chips") or 0) - int(state.get("chips_scored") or 0))
+    if blind_left and candidate["score"] >= blind_left:
         return []
-    if candidate["hand"] == main_hand and candidate["hand"] != "High Card":
+    if candidate["hand"] not in ("High Card", "Pair", "Two Pair"):
         return []
     ranks = Counter(c.get("rank") for c in cards)
     suits = Counter(c.get("suit") for c in cards)
@@ -147,9 +188,11 @@ def _discard_plan(state: dict, main_hand: str, candidate: dict) -> list[dict]:
     elif max(ranks.values()) >= 2:
         target = max(ranks, key=lambda rank: (ranks[rank], str(rank)))
         keep = [i for i, c in enumerate(cards) if c.get("rank") == target]
+        if len(keep) < 3 and len(cards) >= 6:
+            other = [i for i in range(len(cards)) if i not in keep]
+            keep.append(max(other, key=lambda i: RANK_CHIPS.get(cards[i].get("rank"), 0)))
     else:
-        value = {"Ace": 14, "King": 13, "Queen": 12, "Jack": 11}
-        keep = [max(range(len(cards)), key=lambda i: value.get(cards[i].get("rank", ""), 0))]
+        keep = sorted(range(len(cards)), key=lambda i: RANK_CHIPS.get(cards[i].get("rank"), 0), reverse=True)[:3]
     return [{"index": i + 1, "card": _card_label(cards[i])}
             for i in range(len(cards)) if i not in keep][:5]
 
@@ -165,7 +208,8 @@ def guide(state: dict) -> dict:
     base = {"deck": deck, "stage": stage, "ante": state.get("ante"), "money": money,
             "blind": state.get("blind") or {}, "hands_left": state.get("hands_left", 0),
             "discards_left": state.get("discards_left", 0), "jokers": jokers,
-            "main_hand": main_hand, "shop": [], "next": "", "detail": ""}
+            "main_hand": main_hand, "shop": [], "next": "", "detail": "", "score": None,
+            "chips_scored": state.get("chips_scored", 0)}
     if stage == "SHOP":
         cards = state.get("shop_cards", []) + state.get("shop_vouchers", [])
         roles = [by_id.get(card.get("key", ""), {}).get("tags", []) for card in state.get("jokers", [])]
@@ -228,15 +272,22 @@ def guide(state: dict) -> dict:
         candidate = _choose_hand(state, main_hand)
         base["candidate"] = candidate
         if candidate and "selection" in candidate:
-            chosen = ", ".join(f"{c['index']}: {c['card']}" for c in candidate["selection"])
+            chosen = ", ".join(f"{c['index']}. {c['card']}" for c in candidate["selection"])
+            blind_left = max(0, int((state.get("blind") or {}).get("chips") or 0) - int(state.get("chips_scored") or 0))
+            base["score"] = {"chips": candidate["chips"], "mult": candidate["mult"],
+                             "base": candidate["score"], "remaining": blind_left,
+                             "target": (state.get("blind") or {}).get("chips", 0)}
             discard = _discard_plan(state, main_hand, candidate)
-            if discard and int(state.get("hands_left") or 0) > 1:
-                selected = ", ".join(f"{c['index']}: {c['card']}" for c in discard)
-                base["next"] = f"{selected} kartlarını discard etmeyi değerlendir."
-                base["detail"] = f"Hedef {main_hand}; eldeki en iyi hazır el {candidate['hand']}. Blind için acil skor gerekiyorsa {chosen} ile oyna. Skor simülasyonu yok."
+            if discard and blind_left > 0:
+                selected = ", ".join(f"{c['index']}. {c['card']}" for c in discard)
+                base["next"] = f"{selected} kartlarını seç ve 'Discard' düğmesine bas."
+                base["detail"] = f"Yüksek kartları/çifti tutup daha güçlü el arıyoruz. Şu anki hazır el: {HAND_LABELS[candidate['hand']]} ({chosen}). Bu tercih kesin skor garantisi vermez."
             else:
-                base["next"] = f"{candidate['hand']} için {chosen} kartlarını seç."
-                base["detail"] = candidate["note"]
+                base["next"] = f"{chosen} kartlarını seç ve 'Play Hand' düğmesine bas."
+                base["detail"] = f"Hazır el: {HAND_LABELS[candidate['hand']]}. Hesaplanan taban puan yalnızca el seviyesini ve normal kart değerlerini içerir."
+            if jokers or any(c.get("edition") or c.get("seal") or c.get("debuffed") or
+                             c.get("enhancement") not in ("", "Default Base") for c in state.get("hand_cards", [])):
+                base["detail"] += " Joker, kart etkileri veya boss nedeniyle oyundaki gerçek skor farklı olabilir."
         else:
             base["next"] = "Eldeki kartlar bekleniyor."
     else:
