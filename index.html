@@ -95,10 +95,12 @@ async function refreshLive(){
     target.append(decision);
     if(g.score){
       const score=document.createElement("p");score.className="scoreline";
-      score.textContent="Hazır el tahmini: "+g.score.chips+" chip × "+g.score.mult+" Mult ≈ "+g.score.estimate+" · Blind için kalan: "+g.score.remaining;
+      score.textContent=(g.score.after_order?"Kartı taşıdıktan sonra tahmin: ":"Hazır el tahmini: ")+
+        g.score.chips+" chip + "+g.score.mult+" Mult"+
+        (g.score.plasma?" → Plasma dengesi ≈ ":" → çarpım ≈ ")+g.score.estimate+" · Blind için kalan: "+g.score.remaining;
       target.append(score);
       const caveat=document.createElement("p");caveat.className="muted";
-      caveat.textContent="Joker/kart etkilerinin bir kısmı hesaba katılır. Bilinmeyen Joker: "+(g.score.unknown_jokers?.join(", ")||"yok")+". Seal, boss ve tetikleme sırası nedeniyle gerçek skor farklı olabilir.";
+      caveat.textContent="Joker/kart etkilerinin bir kısmı hesaba katılır. Bilinmeyen Joker: "+(g.score.unknown_jokers?.join(", ")||"yok")+". Boss, olasılıklı etkiler ve tetikleme sırası sonucu değiştirebilir.";
       target.append(caveat);
     }
     if(g.pack_options?.length){const title=document.createElement("h4");title.textContent="Pakette görünen kartlar";target.append(title);
