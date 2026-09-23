@@ -43,8 +43,6 @@ def _name(card: dict, by_id: dict) -> str:
 
 def _main_hand(state: dict) -> str:
     hands = state.get("hands") or {}
-    if not hands:
-        return state.get("most_played_hand") or "Pair"
     scoring = {name: 2 * (data.get("level", 1) - 1) + data.get("played", 0)
                for name, data in hands.items() if isinstance(data, dict)}
     ranked = sorted(scoring, key=scoring.get, reverse=True)
@@ -118,6 +116,31 @@ def _choose_hand(state: dict, main_hand: str) -> dict | None:
     selection = [{"index": i + 1, "card": _card_label(cards[i])} for i in indices]
     return {"hand": hand, "selection": selection,
             "note": "Bu seçim yaklaşık el gücüne dayanır; Joker tetiklerini, enhancement ve gerçek skoru hesaplamaz."}
+
+
+def _discard_plan(state: dict, main_hand: str, candidate: dict) -> list[dict]:
+    cards = state.get("hand_cards") or []
+    if not cards or int(state.get("discards_left") or 0) < 1:
+        return []
+    # Preserve an already available strong hand; only recommend a speculative
+    # discard when the target hand is not yet available.
+    if candidate["hand"] not in ("High Card", "Pair", "Two Pair"):
+        return []
+    if candidate["hand"] == main_hand and candidate["hand"] != "High Card":
+        return []
+    ranks = Counter(c.get("rank") for c in cards)
+    suits = Counter(c.get("suit") for c in cards)
+    if main_hand in ("Flush", "Straight Flush") and max(suits.values()) >= 3:
+        target = max(suits, key=suits.get)
+        keep = [i for i, c in enumerate(cards) if c.get("suit") == target]
+    elif max(ranks.values()) >= 2:
+        target = max(ranks, key=lambda rank: (ranks[rank], str(rank)))
+        keep = [i for i, c in enumerate(cards) if c.get("rank") == target]
+    else:
+        value = {"Ace": 14, "King": 13, "Queen": 12, "Jack": 11}
+        keep = [max(range(len(cards)), key=lambda i: value.get(cards[i].get("rank", ""), 0))]
+    return [{"index": i + 1, "card": _card_label(cards[i])}
+            for i in range(len(cards)) if i not in keep][:5]
 
 
 def guide(state: dict) -> dict:
@@ -195,8 +218,14 @@ def guide(state: dict) -> dict:
         base["candidate"] = candidate
         if candidate and "selection" in candidate:
             chosen = ", ".join(f"{c['index']}: {c['card']}" for c in candidate["selection"])
-            base["next"] = f"{candidate['hand']} için {chosen} kartlarını seç."
-            base["detail"] = candidate["note"]
+            discard = _discard_plan(state, main_hand, candidate)
+            if discard and int(state.get("hands_left") or 0) > 1:
+                selected = ", ".join(f"{c['index']}: {c['card']}" for c in discard)
+                base["next"] = f"{selected} kartlarını discard etmeyi değerlendir."
+                base["detail"] = f"Hedef {main_hand}; eldeki en iyi hazır el {candidate['hand']}. Blind için acil skor gerekiyorsa {chosen} ile oyna. Skor simülasyonu yok."
+            else:
+                base["next"] = f"{candidate['hand']} için {chosen} kartlarını seç."
+                base["detail"] = candidate["note"]
         else:
             base["next"] = "Eldeki kartlar bekleniyor."
     else:
