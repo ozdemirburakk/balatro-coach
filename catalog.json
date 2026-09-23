@@ -1,0 +1,1779 @@
+{
+  "version": "Balatro 1.0",
+  "source": "https://github.com/Jofr3/balatro-source/blob/main/localization/en-us.lua",
+  "items": [
+    {
+      "id": "b_abandoned",
+      "name": "Abandoned Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_anaglyph",
+      "name": "Anaglyph Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_black",
+      "name": "Black Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_blue",
+      "name": "Blue Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_checkered",
+      "name": "Checkered Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_erratic",
+      "name": "Erratic Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_ghost",
+      "name": "Ghost Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_green",
+      "name": "Green Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_magic",
+      "name": "Magic Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_nebula",
+      "name": "Nebula Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_painted",
+      "name": "Painted Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_plasma",
+      "name": "Plasma Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_red",
+      "name": "Red Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_yellow",
+      "name": "Yellow Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "b_zodiac",
+      "name": "Zodiac Deck",
+      "category": "Deck"
+    },
+    {
+      "id": "j_8_ball",
+      "name": "8 Ball",
+      "category": "Joker",
+      "tags": [
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_abstract",
+      "name": "Abstract Joker",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "joker-synergy"
+      ]
+    },
+    {
+      "id": "j_acrobat",
+      "name": "Acrobat",
+      "category": "Joker",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_ancient",
+      "name": "Ancient Joker",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_arrowhead",
+      "name": "Arrowhead",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_astronomer",
+      "name": "Astronomer",
+      "category": "Joker",
+      "tags": [
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_banner",
+      "name": "Banner",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "discard"
+      ]
+    },
+    {
+      "id": "j_baron",
+      "name": "Baron",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "face",
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_baseball",
+      "name": "Baseball Card",
+      "category": "Joker",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_blackboard",
+      "name": "Blackboard",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_bloodstone",
+      "name": "Bloodstone",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_blue_joker",
+      "name": "Blue Joker",
+      "category": "Joker",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_blueprint",
+      "name": "Blueprint",
+      "category": "Joker",
+      "tags": [
+        "joker-synergy"
+      ]
+    },
+    {
+      "id": "j_bootstraps",
+      "name": "Bootstraps",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "economy"
+      ]
+    },
+    {
+      "id": "j_brainstorm",
+      "name": "Brainstorm",
+      "category": "Joker"
+    },
+    {
+      "id": "j_bull",
+      "name": "Bull",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "economy"
+      ]
+    },
+    {
+      "id": "j_burglar",
+      "name": "Burglar",
+      "category": "Joker",
+      "tags": [
+        "scaling",
+        "discard",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_burnt",
+      "name": "Burnt Joker",
+      "category": "Joker",
+      "tags": [
+        "discard"
+      ]
+    },
+    {
+      "id": "j_business",
+      "name": "Business Card",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "face"
+      ]
+    },
+    {
+      "id": "j_caino",
+      "name": "Canio",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "face"
+      ]
+    },
+    {
+      "id": "j_campfire",
+      "name": "Campfire",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_card_sharp",
+      "name": "Card Sharp",
+      "category": "Joker",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_cartomancer",
+      "name": "Cartomancer",
+      "category": "Joker",
+      "tags": [
+        "consumable",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_castle",
+      "name": "Castle",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "scaling",
+        "discard",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_cavendish",
+      "name": "Cavendish",
+      "category": "Joker",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_ceremonial",
+      "name": "Ceremonial Dagger",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "scaling",
+        "joker-synergy",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_certificate",
+      "name": "Certificate",
+      "category": "Joker",
+      "tags": [
+        "scaling",
+        "card-enhancement"
+      ]
+    },
+    {
+      "id": "j_chaos",
+      "name": "Chaos the Clown",
+      "category": "Joker"
+    },
+    {
+      "id": "j_chicot",
+      "name": "Chicot",
+      "category": "Joker",
+      "tags": [
+        "blind"
+      ]
+    },
+    {
+      "id": "j_clever",
+      "name": "Clever Joker",
+      "category": "Joker",
+      "hand": "Two Pair",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_cloud_9",
+      "name": "Cloud 9",
+      "category": "Joker",
+      "tags": [
+        "economy"
+      ]
+    },
+    {
+      "id": "j_constellation",
+      "name": "Constellation",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_crafty",
+      "name": "Crafty Joker",
+      "category": "Joker",
+      "hand": "Flush",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_crazy",
+      "name": "Crazy Joker",
+      "category": "Joker",
+      "hand": "Straight",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_credit_card",
+      "name": "Credit Card",
+      "category": "Joker",
+      "tags": [
+        "economy"
+      ]
+    },
+    {
+      "id": "j_delayed_grat",
+      "name": "Delayed Gratification",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "discard"
+      ]
+    },
+    {
+      "id": "j_devious",
+      "name": "Devious Joker",
+      "category": "Joker",
+      "hand": "Straight",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_diet_cola",
+      "name": "Diet Cola",
+      "category": "Joker"
+    },
+    {
+      "id": "j_dna",
+      "name": "DNA",
+      "category": "Joker",
+      "tags": [
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_drivers_license",
+      "name": "Driver's License",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "card-enhancement"
+      ]
+    },
+    {
+      "id": "j_droll",
+      "name": "Droll Joker",
+      "category": "Joker",
+      "hand": "Flush",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_drunkard",
+      "name": "Drunkard",
+      "category": "Joker",
+      "tags": [
+        "discard"
+      ]
+    },
+    {
+      "id": "j_duo",
+      "name": "The Duo",
+      "category": "Joker",
+      "hand": "Pair",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_dusk",
+      "name": "Dusk",
+      "category": "Joker"
+    },
+    {
+      "id": "j_egg",
+      "name": "Egg",
+      "category": "Joker",
+      "tags": [
+        "scaling",
+        "economy"
+      ]
+    },
+    {
+      "id": "j_erosion",
+      "name": "Erosion",
+      "category": "Joker",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_even_steven",
+      "name": "Even Steven",
+      "category": "Joker",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_faceless",
+      "name": "Faceless Joker",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "discard",
+        "face"
+      ]
+    },
+    {
+      "id": "j_family",
+      "name": "The Family",
+      "category": "Joker",
+      "hand": "Four of a Kind",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_fibonacci",
+      "name": "Fibonacci",
+      "category": "Joker",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_flash",
+      "name": "Flash Card",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_flower_pot",
+      "name": "Flower Pot",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_fortune_teller",
+      "name": "Fortune Teller",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_four_fingers",
+      "name": "Four Fingers",
+      "category": "Joker"
+    },
+    {
+      "id": "j_gift",
+      "name": "Gift Card",
+      "category": "Joker",
+      "tags": [
+        "scaling",
+        "economy"
+      ]
+    },
+    {
+      "id": "j_glass",
+      "name": "Glass Joker",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "card-enhancement"
+      ]
+    },
+    {
+      "id": "j_gluttenous_joker",
+      "name": "Gluttonous Joker",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_golden",
+      "name": "Golden Joker",
+      "category": "Joker",
+      "tags": [
+        "economy"
+      ]
+    },
+    {
+      "id": "j_greedy_joker",
+      "name": "Greedy Joker",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_green_joker",
+      "name": "Green Joker",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "discard"
+      ]
+    },
+    {
+      "id": "j_gros_michel",
+      "name": "Gros Michel",
+      "category": "Joker",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_hack",
+      "name": "Hack",
+      "category": "Joker"
+    },
+    {
+      "id": "j_half",
+      "name": "Half Joker",
+      "category": "Joker",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_hallucination",
+      "name": "Hallucination",
+      "category": "Joker",
+      "tags": [
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_hanging_chad",
+      "name": "Hanging Chad",
+      "category": "Joker"
+    },
+    {
+      "id": "j_hiker",
+      "name": "Hiker",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_hit_the_road",
+      "name": "Hit the Road",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "discard",
+        "face"
+      ]
+    },
+    {
+      "id": "j_hologram",
+      "name": "Hologram",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_ice_cream",
+      "name": "Ice Cream",
+      "category": "Joker",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_idol",
+      "name": "The Idol",
+      "category": "Joker",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_invisible",
+      "name": "Invisible Joker",
+      "category": "Joker"
+    },
+    {
+      "id": "j_joker",
+      "name": "Joker",
+      "category": "Joker",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_jolly",
+      "name": "Jolly Joker",
+      "category": "Joker",
+      "hand": "Pair",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_juggler",
+      "name": "Juggler",
+      "category": "Joker",
+      "tags": [
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_loyalty_card",
+      "name": "Loyalty Card",
+      "category": "Joker",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_luchador",
+      "name": "Luchador",
+      "category": "Joker",
+      "tags": [
+        "blind"
+      ]
+    },
+    {
+      "id": "j_lucky_cat",
+      "name": "Lucky Cat",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "card-enhancement"
+      ]
+    },
+    {
+      "id": "j_lusty_joker",
+      "name": "Lusty Joker",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_mad",
+      "name": "Mad Joker",
+      "category": "Joker",
+      "hand": "Two Pair",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_madness",
+      "name": "Madness",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_mail",
+      "name": "Mail-In Rebate",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "discard"
+      ]
+    },
+    {
+      "id": "j_marble",
+      "name": "Marble Joker",
+      "category": "Joker",
+      "tags": [
+        "scaling",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_matador",
+      "name": "Matador",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_merry_andy",
+      "name": "Merry Andy",
+      "category": "Joker",
+      "tags": [
+        "discard",
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_midas_mask",
+      "name": "Midas Mask",
+      "category": "Joker",
+      "tags": [
+        "face",
+        "card-enhancement"
+      ]
+    },
+    {
+      "id": "j_mime",
+      "name": "Mime",
+      "category": "Joker",
+      "tags": [
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_misprint",
+      "name": "Misprint",
+      "category": "Joker"
+    },
+    {
+      "id": "j_mr_bones",
+      "name": "Mr. Bones",
+      "category": "Joker"
+    },
+    {
+      "id": "j_mystic_summit",
+      "name": "Mystic Summit",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "discard"
+      ]
+    },
+    {
+      "id": "j_obelisk",
+      "name": "Obelisk",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_odd_todd",
+      "name": "Odd Todd",
+      "category": "Joker",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_onyx_agate",
+      "name": "Onyx Agate",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_oops",
+      "name": "Oops! All 6s",
+      "category": "Joker"
+    },
+    {
+      "id": "j_order",
+      "name": "The Order",
+      "category": "Joker",
+      "hand": "Straight",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_pareidolia",
+      "name": "Pareidolia",
+      "category": "Joker",
+      "tags": [
+        "face"
+      ]
+    },
+    {
+      "id": "j_perkeo",
+      "name": "Perkeo",
+      "category": "Joker"
+    },
+    {
+      "id": "j_photograph",
+      "name": "Photograph",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "face"
+      ]
+    },
+    {
+      "id": "j_popcorn",
+      "name": "Popcorn",
+      "category": "Joker",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "j_raised_fist",
+      "name": "Raised Fist",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "scaling",
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_ramen",
+      "name": "Ramen",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "discard"
+      ]
+    },
+    {
+      "id": "j_red_card",
+      "name": "Red Card",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "scaling",
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_reserved_parking",
+      "name": "Reserved Parking",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "face",
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_ride_the_bus",
+      "name": "Ride the Bus",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "scaling",
+        "face"
+      ]
+    },
+    {
+      "id": "j_riff_raff",
+      "name": "Riff-Raff",
+      "category": "Joker",
+      "tags": [
+        "blind"
+      ]
+    },
+    {
+      "id": "j_ring_master",
+      "name": "Showman",
+      "category": "Joker",
+      "tags": [
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_rocket",
+      "name": "Rocket",
+      "category": "Joker",
+      "tags": [
+        "scaling",
+        "economy",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_rough_gem",
+      "name": "Rough Gem",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_runner",
+      "name": "Runner",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_satellite",
+      "name": "Satellite",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_scary_face",
+      "name": "Scary Face",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "face"
+      ]
+    },
+    {
+      "id": "j_scholar",
+      "name": "Scholar",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "mult"
+      ]
+    },
+    {
+      "id": "j_seance",
+      "name": "Séance",
+      "category": "Joker",
+      "tags": [
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_seeing_double",
+      "name": "Seeing Double",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_selzer",
+      "name": "Seltzer",
+      "category": "Joker"
+    },
+    {
+      "id": "j_shoot_the_moon",
+      "name": "Shoot the Moon",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "face",
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_shortcut",
+      "name": "Shortcut",
+      "category": "Joker"
+    },
+    {
+      "id": "j_sixth_sense",
+      "name": "Sixth Sense",
+      "category": "Joker",
+      "tags": [
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_sly",
+      "name": "Sly Joker",
+      "category": "Joker",
+      "hand": "Pair",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_smeared",
+      "name": "Smeared Joker",
+      "category": "Joker",
+      "tags": [
+        "suit"
+      ]
+    },
+    {
+      "id": "j_smiley",
+      "name": "Smiley Face",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "face"
+      ]
+    },
+    {
+      "id": "j_sock_and_buskin",
+      "name": "Sock and Buskin",
+      "category": "Joker",
+      "tags": [
+        "face"
+      ]
+    },
+    {
+      "id": "j_space",
+      "name": "Space Joker",
+      "category": "Joker"
+    },
+    {
+      "id": "j_splash",
+      "name": "Splash",
+      "category": "Joker"
+    },
+    {
+      "id": "j_square",
+      "name": "Square Joker",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_steel_joker",
+      "name": "Steel Joker",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "card-enhancement"
+      ]
+    },
+    {
+      "id": "j_stencil",
+      "name": "Joker Stencil",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "joker-synergy"
+      ]
+    },
+    {
+      "id": "j_stone",
+      "name": "Stone Joker",
+      "category": "Joker",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_stuntman",
+      "name": "Stuntman",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_supernova",
+      "name": "Supernova",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_superposition",
+      "name": "Superposition",
+      "category": "Joker",
+      "tags": [
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_swashbuckler",
+      "name": "Swashbuckler",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_throwback",
+      "name": "Throwback",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "blind"
+      ]
+    },
+    {
+      "id": "j_ticket",
+      "name": "Golden Ticket",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "card-enhancement"
+      ]
+    },
+    {
+      "id": "j_to_the_moon",
+      "name": "To the Moon",
+      "category": "Joker",
+      "tags": [
+        "economy"
+      ]
+    },
+    {
+      "id": "j_todo_list",
+      "name": "To Do List",
+      "category": "Joker",
+      "tags": [
+        "economy"
+      ]
+    },
+    {
+      "id": "j_trading",
+      "name": "Trading Card",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "discard"
+      ]
+    },
+    {
+      "id": "j_tribe",
+      "name": "The Tribe",
+      "category": "Joker",
+      "hand": "Flush",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_triboulet",
+      "name": "Triboulet",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "face"
+      ]
+    },
+    {
+      "id": "j_trio",
+      "name": "The Trio",
+      "category": "Joker",
+      "hand": "Three of a Kind",
+      "tags": [
+        "xmult"
+      ]
+    },
+    {
+      "id": "j_troubadour",
+      "name": "Troubadour",
+      "category": "Joker",
+      "tags": [
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_trousers",
+      "name": "Spare Trousers",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_turtle_bean",
+      "name": "Turtle Bean",
+      "category": "Joker",
+      "tags": [
+        "hand-size"
+      ]
+    },
+    {
+      "id": "j_vagabond",
+      "name": "Vagabond",
+      "category": "Joker",
+      "tags": [
+        "economy",
+        "consumable"
+      ]
+    },
+    {
+      "id": "j_vampire",
+      "name": "Vampire",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "card-enhancement"
+      ]
+    },
+    {
+      "id": "j_walkie_talkie",
+      "name": "Walkie Talkie",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "mult"
+      ]
+    },
+    {
+      "id": "j_wee",
+      "name": "Wee Joker",
+      "category": "Joker",
+      "tags": [
+        "chips",
+        "scaling"
+      ]
+    },
+    {
+      "id": "j_wily",
+      "name": "Wily Joker",
+      "category": "Joker",
+      "hand": "Three of a Kind",
+      "tags": [
+        "chips"
+      ]
+    },
+    {
+      "id": "j_wrathful_joker",
+      "name": "Wrathful Joker",
+      "category": "Joker",
+      "tags": [
+        "mult",
+        "suit"
+      ]
+    },
+    {
+      "id": "j_yorick",
+      "name": "Yorick",
+      "category": "Joker",
+      "tags": [
+        "xmult",
+        "scaling",
+        "discard"
+      ]
+    },
+    {
+      "id": "j_zany",
+      "name": "Zany Joker",
+      "category": "Joker",
+      "hand": "Three of a Kind",
+      "tags": [
+        "mult"
+      ]
+    },
+    {
+      "id": "v_antimatter",
+      "name": "Antimatter",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_blank",
+      "name": "Blank",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_clearance_sale",
+      "name": "Clearance Sale",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_crystal_ball",
+      "name": "Crystal Ball",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_directors_cut",
+      "name": "Director's Cut",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_glow_up",
+      "name": "Glow Up",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_grabber",
+      "name": "Grabber",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_hieroglyph",
+      "name": "Hieroglyph",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_hone",
+      "name": "Hone",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_illusion",
+      "name": "Illusion",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_liquidation",
+      "name": "Liquidation",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_magic_trick",
+      "name": "Magic Trick",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_money_tree",
+      "name": "Money Tree",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_nacho_tong",
+      "name": "Nacho Tong",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_observatory",
+      "name": "Observatory",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_omen_globe",
+      "name": "Omen Globe",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_overstock_norm",
+      "name": "Overstock",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_overstock_plus",
+      "name": "Overstock Plus",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_paint_brush",
+      "name": "Paint Brush",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_palette",
+      "name": "Palette",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_petroglyph",
+      "name": "Petroglyph",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_planet_merchant",
+      "name": "Planet Merchant",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_planet_tycoon",
+      "name": "Planet Tycoon",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_recyclomancy",
+      "name": "Recyclomancy",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_reroll_glut",
+      "name": "Reroll Glut",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_reroll_surplus",
+      "name": "Reroll Surplus",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_retcon",
+      "name": "Retcon",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_seed_money",
+      "name": "Seed Money",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_tarot_merchant",
+      "name": "Tarot Merchant",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_tarot_tycoon",
+      "name": "Tarot Tycoon",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_telescope",
+      "name": "Telescope",
+      "category": "Voucher"
+    },
+    {
+      "id": "v_wasteful",
+      "name": "Wasteful",
+      "category": "Voucher"
+    },
+    {
+      "id": "c_ceres",
+      "name": "Ceres",
+      "category": "Planet",
+      "hand": "Flush House"
+    },
+    {
+      "id": "c_earth",
+      "name": "Earth",
+      "category": "Planet",
+      "hand": "Full House"
+    },
+    {
+      "id": "c_eris",
+      "name": "Eris",
+      "category": "Planet",
+      "hand": "Flush Five"
+    },
+    {
+      "id": "c_jupiter",
+      "name": "Jupiter",
+      "category": "Planet",
+      "hand": "Flush"
+    },
+    {
+      "id": "c_mars",
+      "name": "Mars",
+      "category": "Planet",
+      "hand": "Four of a Kind"
+    },
+    {
+      "id": "c_mercury",
+      "name": "Mercury",
+      "category": "Planet",
+      "hand": "Pair"
+    },
+    {
+      "id": "c_neptune",
+      "name": "Neptune",
+      "category": "Planet",
+      "hand": "Straight Flush"
+    },
+    {
+      "id": "c_planet_x",
+      "name": "Planet X",
+      "category": "Planet",
+      "hand": "Five of a Kind"
+    },
+    {
+      "id": "c_pluto",
+      "name": "Pluto",
+      "category": "Planet",
+      "hand": "High Card"
+    },
+    {
+      "id": "c_saturn",
+      "name": "Saturn",
+      "category": "Planet",
+      "hand": "Straight"
+    },
+    {
+      "id": "c_uranus",
+      "name": "Uranus",
+      "category": "Planet",
+      "hand": "Two Pair"
+    },
+    {
+      "id": "c_venus",
+      "name": "Venus",
+      "category": "Planet",
+      "hand": "Three of a Kind"
+    },
+    {
+      "id": "c_chariot",
+      "name": "The Chariot",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_death",
+      "name": "Death",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_devil",
+      "name": "The Devil",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_emperor",
+      "name": "The Emperor",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_empress",
+      "name": "The Empress",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_fool",
+      "name": "The Fool",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_hanged_man",
+      "name": "The Hanged Man",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_heirophant",
+      "name": "The Hierophant",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_hermit",
+      "name": "The Hermit",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_high_priestess",
+      "name": "The High Priestess",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_judgement",
+      "name": "Judgement",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_justice",
+      "name": "Justice",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_lovers",
+      "name": "The Lovers",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_magician",
+      "name": "The Magician",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_moon",
+      "name": "The Moon",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_star",
+      "name": "The Star",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_strength",
+      "name": "Strength",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_sun",
+      "name": "The Sun",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_temperance",
+      "name": "Temperance",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_tower",
+      "name": "The Tower",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_wheel_of_fortune",
+      "name": "The Wheel of Fortune",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_world",
+      "name": "The World",
+      "category": "Tarot"
+    },
+    {
+      "id": "c_ankh",
+      "name": "Ankh",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_aura",
+      "name": "Aura",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_black_hole",
+      "name": "Black Hole",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_cryptid",
+      "name": "Cryptid",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_deja_vu",
+      "name": "Deja Vu",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_ectoplasm",
+      "name": "Ectoplasm",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_familiar",
+      "name": "Familiar",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_grim",
+      "name": "Grim",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_hex",
+      "name": "Hex",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_immolate",
+      "name": "Immolate",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_incantation",
+      "name": "Incantation",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_medium",
+      "name": "Medium",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_ouija",
+      "name": "Ouija",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_sigil",
+      "name": "Sigil",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_soul",
+      "name": "The Soul",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_talisman",
+      "name": "Talisman",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_trance",
+      "name": "Trance",
+      "category": "Spectral"
+    },
+    {
+      "id": "c_wraith",
+      "name": "Wraith",
+      "category": "Spectral"
+    }
+  ]
+}
