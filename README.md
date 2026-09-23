@@ -23,7 +23,7 @@ cd ~/Developer/balatro-coach
 python3 coach.py
 ```
 
-Tarayıcıda açılan sayfanın üstündeki **Canlı koşu** bölümü deck ve oyun durumunu gösterir. Tarayıcı açılmazsa terminalde yazan `http://127.0.0.1:...` adresine git. Terminal açık kalmalı; kapatmak için Ctrl+C. Durum dosyasını denetlemek için: `ls -l ~/Library/Application\\ Support/Balatro/balatro_coach_state.json`.
+Tarayıcıda açılan sayfanın üstündeki **Canlı koşu** bölümü deck ve oyun durumunu gösterir. Tarayıcı açılmazsa terminalde yazan `http://127.0.0.1:...` adresine git. Terminal açık kalmalı; kapatmak için Ctrl+C. Durum dosyasını denetlemek için: `ls -l "$HOME/Library/Application Support/Balatro/balatro_coach_state.json"`.
 
 Zaten Lovely + Steamodded kuruluysa `python3 install_mod.py` yalnızca Coach köprüsünü kopyalar.
 
