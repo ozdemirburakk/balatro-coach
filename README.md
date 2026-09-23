@@ -1,38 +1,43 @@
-# Balatro Coach — Shop Advisor (ilk sürüm)
+# Balatro Coach
 
-Balatro shop'unda Joker/Planet/Voucher alışverişi için Türkçe masaüstü yardımcısı. Oyun dosyalarını değiştirmez, tıklama yapmaz. **Kartı kendi kendine kesin olarak tanımaz:** tooltip adını ve fiyatını girersin; isteğe bağlı OCR yalnızca kontrol edilecek ham metni gösterir. Yanlış Joker adını özgüvenle söylememesi için bilinmeyen ürünlerde karar üretmez.
+Balatro koşusunu izleyen Türkçe, yerel yardımcı. Deck, ante, para, mevcut Joker'lar, shop ve eldeki kartları **oyundan** okur; oyun aşaması değiştikçe öneriyi yeniler. Oyun adına tıklamaz veya hamle yapmaz. Python arayüzü tarayıcıda açılır; **Tkinter ve pip kurulumu gerekmez**.
 
-## Kurulum
+> Katalog Balatro 1.0 için 150 Joker, 32 Voucher, 12 Planet, 22 Tarot, 18 Spectral ve 15 Deck adı içerir. Tam oyun simülasyonu değildir: Joker'ların bütün koşulları, enhancement, olasılıklar, gerçek skor, boss etkileri, paket içeriği ve skip tag değeri henüz hesaplanmaz. Katalog adı tanımak ile kartın değerini kusursuz değerlendirmek farklı şeylerdir. Belirsiz önerileri oyundaki tooltip'e göre doğrula.
 
-Python 3.10+ ile Windows PowerShell:
+## Mac kurulumu (Steam sürümü)
 
-```powershell
-py -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python coach.py
-```
+1. [Steamodded'ın Mac kurulum rehberine](https://docs.smods.dev/Installation/Installing%20Steamodded%20mac/) göre **Lovely + Steamodded** kur. Mac'te oyunu rehberdeki `run_lovely_macos.sh` ile başlat. Mod klasörünün yolu `~/Library/Application Support/Balatro/Mods` olmalı.
+2. Repo dizininde köprüyü kur:
 
-macOS:
+   ```bash
+   cd ~/Developer/balatro-coach
+   git pull
+   python install_mod.py
+   ```
+
+3. Balatro'yu modlu biçimde yeniden başlat ve bir koşu aç. Ayrı bir terminalde:
+
+   ```bash
+   cd ~/Developer/balatro-coach
+   python coach.py
+   ```
+
+Tarayıcıda açılan sayfanın üstündeki **Canlı koşu** bölümü deck ve oyun durumunu gösterir. Tarayıcı açılmazsa terminalde yazan `http://127.0.0.1:...` adresine git. Terminal açık kalmalı; kapatmak için Ctrl+C.
+
+Steamodded zaten kuruluysa yalnızca 2. ve 3. adımı uygula. Oyun modlu açılmazsa canlı durum görünmez. Dosyanın üretildiğini kontrol etmek için:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python coach.py
+ls -l ~/Library/Application\ Support/Balatro/balatro_coach_state.json
 ```
 
-Linux'ta `python3-tk` paketini kurman gerekebilir. Ekran görüntüsü için işletim sisteminin ekran kayıt iznini ver. **OCR** düğmesi için ayrıca [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) uygulamasını yükleyip PATH'e ekle; uygulamanın diğer bölümleri Tesseract olmadan çalışır. OCR İngilizce oyun arayüzü için tasarlanmıştır.
+## Windows
 
-## Kullanım
+[Steamodded'ın Windows rehberine](https://docs.smods.dev/Installation/Installing%20Steamodded%20windows/) göre Lovely ve Steamodded'ı kur. Sonra `py install_mod.py` ve `py coach.py` çalıştır. Oyun modunu yüklemek için Balatro'yu yeniden aç.
 
-1. Para, ante, oynadığın ana el ve mevcut Joker'ları gir.
-2. Her ürün için tooltip'teki **doğru adı** ve fiyatı `Venus, 3` biçiminde yeni satıra yaz.
-3. **Önerileri hesapla** düğmesine bas. Sonuçları oyundaki etki, blind ve kalan bütçeyle karşılaştır.
-4. İstersen fareyi kartta tutup **Tooltip OCR** ile ekrandaki ham metni aç; adı ve fiyatı **kendin doğrula**. **Ekran görüntüsü al** düğmesi bir PNG'yi ev klasörüne kaydeder.
+## Nasıl çalışır?
 
-Varsayılan alanlar önceki Yellow Deck koşusundaki Wily Joker / $16 durumuna örnektir; yeni koşuda değiştir.
+`mod/` içindeki küçük Steamodded eklentisi durumu yalnızca yerel `balatro_coach_state.json` dosyasına yazar. Python bu dosyayı okur ve yalnızca `127.0.0.1` üzerinde bir sayfa açar. Oyuna komut göndermez. Canlı okuma çalışmadığında elle shop değerlendirmesi ve Mac'te isteğe bağlı tooltip OCR kullanılabilir; OCR için ayrıca `brew install tesseract` gerekir.
 
-## Sınırlar
+Öneriler şu anda shop'ta temel el uyumu, chip/Mult ihtiyacı ve faiz eşiğini; el sırasında yaklaşık poker elini; blind seçimi sırasında temel ekonomi yaklaşımını kullanır. **Win garantisi ve kesin skor hesabı yoktur.** Kapsamlı strateji motoru için Joker tetiklerinin, boss kurallarının ve oynanacak elin gerçek skorunun modellenmesi gerekir.
 
-Öneriler basit kurallara dayanır ve desteklenen küçük katalog dışındaki ürünleri tanımaz. Kart sürümü, edition, stake, blind, oynanmış el seviyesi, deste ve gerçek skor hesaplanmaz. Bu sürüm otomatik oyun durumu okuma, güvenilir görüntü eşleştirme veya otomatik alışveriş vaat etmez. Desteklenen ürünler `coach.py` içindeki `JOKERS`, `PLANETS` ve iki voucher'dır.
+Katalog kart adları ve sınıflandırma işaretleri [oyun yerelleştirme verisinin bir aynasındaki](https://github.com/Jofr3/balatro-source/blob/main/localization/en-us.lua) adlardan türetildi. Mod yapısı için [Steamodded dokümantasyonu](https://docs.smods.dev/Guides/G/) kullanıldı.
