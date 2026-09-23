@@ -19,6 +19,9 @@
   .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
   .result{background:#172133;border-radius:10px;padding:12px;margin:10px 0;border-left:5px solid #7b93f0}
   .result small{color:#bac3d2}.result p{margin:6px 0}
+  .decision{background:#162b32;border:1px solid #4b9189;border-radius:12px;padding:16px;margin:16px 0}
+  .decision h3{margin:0 0 8px}.decision p{margin:8px 0}
+  .scoreline{font-size:1.08rem;font-weight:650}
   .muted{color:#a6b2c4} #error{color:#ffb2b2}
   #ocrResult{white-space:pre-wrap;max-height:180px;overflow:auto;background:#111827;padding:12px;border-radius:8px}
   @media(max-width:550px){.item{grid-template-columns:1fr 70px 40px}body{padding:12px}}
@@ -34,12 +37,12 @@
 <details><summary>Elle shop değerlendirmesi (mod olmadan da çalışır)</summary>
 <section class="panel">
   <div class="grid">
-    <label>Para ($)<input id="money" type="number" min="0" value="16"></label>
+    <label>Para ($)<input id="money" type="number" min="0" placeholder="Oyundaki para"></label>
     <label>Ante<input id="ante" type="number" min="1" value="1"></label>
     <label>Ana el<select id="hand"></select></label>
   </div>
-  <label style="margin-top:14px">Mevcut Joker’lar (virgülle ayır)<input id="jokers" value="Wily Joker"></label>
-  <p>Shop ürününün tooltip adını seç, oyun fiyatını yaz. Önceki koşudan örnek değerler gelmiştir; yeni koşuda değiştir.</p>
+  <label style="margin-top:14px">Mevcut Joker’lar (virgülle ayır)<input id="jokers" placeholder="Yalnızca sende olan Joker’lar"></label>
+  <p>Elle değerlendirme için shop ürününün tooltip adını seçip oyun fiyatını yaz.</p>
   <div id="items"></div>
   <datalist id="names"></datalist>
   <div class="actions">
@@ -64,6 +67,7 @@
 const token="__TOKEN__";
 let catalog=[];
 const $=id=>document.getElementById(id);
+const stages={SELECTING_HAND:"Kart seçimi",SHOP:"Mağaza",BLIND_SELECT:"Blind seçimi"};
 async function refreshLive(){
   try{
     const response=await fetch("/state",{cache:"no-store"});const data=await response.json();
@@ -75,11 +79,23 @@ async function refreshLive(){
     $("liveStatus").textContent="oyundan veri geliyor";
     const g=data.guidance;
     const info=document.createElement("p");
-    info.textContent=g.deck+" · Ante "+g.ante+" · $"+g.money+" · "+g.stage+" · ana el "+g.main_hand;
+    info.textContent=g.deck+" · Ante "+g.ante+" · $"+g.money+" · "+(stages[g.stage]||"Oyun devam ediyor")+
+      (g.stage==="SELECTING_HAND"?" · Kalan el: "+g.hands_left+" · Discard: "+g.discards_left:"");
     target.append(info);
     if(g.jokers.length){const own=document.createElement("p");own.textContent="Joker'lar: "+g.jokers.join(", ");target.append(own)}
-    const next=document.createElement("h3");next.textContent="Öneri: "+g.next;target.append(next);
-    const detail=document.createElement("p");detail.textContent=g.detail;target.append(detail);
+    const decision=document.createElement("div");decision.className="decision";
+    const next=document.createElement("h3");next.textContent="Şimdi ne yapayım?";decision.append(next);
+    const action=document.createElement("p");action.textContent=g.next;decision.append(action);
+    const detail=document.createElement("p");detail.className="muted";detail.textContent=g.detail;decision.append(detail);
+    target.append(decision);
+    if(g.score){
+      const score=document.createElement("p");score.className="scoreline";
+      score.textContent="Hazır elin taban puanı: "+g.score.chips+" chip × "+g.score.mult+" Mult = "+g.score.base+" · Blind için kalan: "+g.score.remaining;
+      target.append(score);
+      const caveat=document.createElement("p");caveat.className="muted";
+      caveat.textContent="Taban puan tahminidir; Joker, geliştirme, edition, seal ve boss etkileri dahil değildir. Oyundaki skor farklı olabilir.";
+      target.append(caveat);
+    }
     if(g.shop.length){const title=document.createElement("h4");title.textContent="Shop";target.append(title);
       for(const item of g.shop){
         const card=document.createElement("div");card.className="result";
@@ -104,7 +120,9 @@ async function api(path,body){
 function showError(message){$("error").textContent=message||""}
 async function calculate(){
   showError("");
-  const items=Array.from(document.querySelectorAll(".item")).map(row=>({name:row.children[0].value,price:row.children[1].value}));
+  if($("money").value===""){showError("Öneri için oyundaki para miktarını gir.");return}
+  const items=Array.from(document.querySelectorAll(".item")).filter(row=>row.children[0].value.trim()).map(row=>({name:row.children[0].value,price:row.children[1].value}));
+  if(items.some(item=>item.price==="")){showError("Shop ürünlerinin oyundaki fiyatını gir.");return}
   try {
     const data=await api("/evaluate",{money:$("money").value,ante:$("ante").value,hand:$("hand").value,jokers:$("jokers").value,items});
     const target=$("results");target.replaceChildren();
@@ -133,8 +151,7 @@ fetch("/catalog").then(r=>r.json()).then(data=>{
   for(const hand of data.hands){const option=document.createElement("option");option.textContent=hand;$("hand").append(option)}
   $("hand").value="Three of a Kind";
   for(const card of catalog){const opt=document.createElement("option");opt.value=card.name;$("names").append(opt)}
-  addRow("Venus",3);addRow("Uranus",3);addRow("Overstock",10);
-  calculate();
+  addRow("", "");
 }).catch(error=>showError(error.message));
 </script>
 </body>
