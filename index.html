@@ -95,10 +95,10 @@ async function refreshLive(){
     target.append(decision);
     if(g.score){
       const score=document.createElement("p");score.className="scoreline";
-      score.textContent="Hazır elin taban puanı: "+g.score.chips+" chip × "+g.score.mult+" Mult = "+g.score.base+" · Blind için kalan: "+g.score.remaining;
+      score.textContent="Hazır el tahmini: "+g.score.chips+" chip × "+g.score.mult+" Mult ≈ "+g.score.estimate+" · Blind için kalan: "+g.score.remaining;
       target.append(score);
       const caveat=document.createElement("p");caveat.className="muted";
-      caveat.textContent="Taban puan tahminidir; Joker, geliştirme, edition, seal ve boss etkileri dahil değildir. Oyundaki skor farklı olabilir.";
+      caveat.textContent="Joker/kart etkilerinin bir kısmı hesaba katılır. Bilinmeyen Joker: "+(g.score.unknown_jokers?.join(", ")||"yok")+". Seal, boss ve tetikleme sırası nedeniyle gerçek skor farklı olabilir.";
       target.append(caveat);
     }
     if(g.pack_options?.length){const title=document.createElement("h4");title.textContent="Pakette görünen kartlar";target.append(title);
