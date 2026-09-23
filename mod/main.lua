@@ -76,7 +76,13 @@ local function snapshot()
     local blind = game.blind or {}
     local hands = {}
     for name, value in pairs(game.hands or {}) do
-        hands[name] = {level = value.level or 1, played = value.played or 0, visible = value.visible or false}
+        hands[name] = {
+            level = value.level or 1,
+            played = value.played or 0,
+            visible = value.visible or false,
+            chips = value.chips,
+            mult = value.mult,
+        }
     end
     local vouchers = {}
     for key, used in pairs(game.used_vouchers or {}) do
