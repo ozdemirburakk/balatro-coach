@@ -16,6 +16,8 @@ python3 setup_steam_mac.py
 
 Bu komut resmî Lovely ve Steamodded sürümlerini GitHub'dan indirip Mac'teki Steam Balatro'ya ve mod klasörüne yerleştirir; Coach köprüsünü de kurar. Mevcut Lovely/Steamodded kurulumuna dokunmaz. Oyun başka Steam kitaplığındaysa `python3 setup_steam_mac.py --game-dir "/oyunun/Balatro/klasörü"` çalıştır. Sorun yaşarsan [Steamodded'ın Mac kurulum rehberine](https://docs.smods.dev/Installation/Installing%20Steamodded%20mac/) bak.
 
+Coach güncellendikten sonra köprü dosyası da değiştiyse repo dizininde `python3 install_mod.py` çalıştırıp oyunu yeniden aç. Python sayfasını da kapatıp `python3 coach.py` ile yeniden başlat.
+
 Balatro'yu **Steam'deki Oyna düğmesiyle değil**, Finder'da Steam > Balatro > Yönet > Yerel dosyalara göz at yoluyla açılan oyun klasöründeki `run_lovely_macos.sh` dosyasını Terminal'e sürükleyip Enter'a basarak aç. Bu, Mac'te modlu oyun için gereken yöntemdir. Bir koşu başlat. Ayrı bir Terminal penceresinde:
 
 ```bash
@@ -35,6 +37,6 @@ Zaten Lovely + Steamodded kuruluysa `python3 install_mod.py` yalnızca Coach kö
 
 `mod/` içindeki küçük Steamodded eklentisi durumu yalnızca yerel `balatro_coach_state.json` dosyasına yazar. Python bu dosyayı okur ve yalnızca `127.0.0.1` üzerinde bir sayfa açar. Oyuna komut göndermez. Canlı okuma çalışmadığında elle shop değerlendirmesi ve Mac'te isteğe bağlı tooltip OCR kullanılabilir; OCR için ayrıca `brew install tesseract` gerekir.
 
-Öneriler şu anda shop'ta temel el uyumu, chip/Mult ihtiyacı ve faiz eşiğini; el sırasında yaklaşık poker elini; blind seçimi sırasında temel ekonomi yaklaşımını kullanır. **Win garantisi ve kesin skor hesabı yoktur.** Kapsamlı strateji motoru için Joker tetiklerinin, boss kurallarının ve oynanacak elin gerçek skorunun modellenmesi gerekir.
+Öneriler shop'ta temel el uyumu ve ekonomiyi; elde normal poker eli, kart puanları, el seviyesi ve kalan blind hedefini kullanır. Discard önerisi yüksek kartı, mevcut çifti veya renk planını koruyan basit bir yaklaşımdır. Gösterilen **taban puan** Joker, geliştirme, edition, seal ve boss etkilerini içermez; kesin oyun skoru veya kazanma garantisi değildir. Kartları oyundaki sıraya göre 1. A♥, 2. J♦ biçiminde gösterir.
 
 Katalog kart adları ve sınıflandırma işaretleri [oyun yerelleştirme verisinin bir aynasındaki](https://github.com/Jofr3/balatro-source/blob/main/localization/en-us.lua) adlardan türetildi. Mod yapısı için [Steamodded dokümantasyonu](https://docs.smods.dev/Guides/G/) kullanıldı.
