@@ -6,29 +6,26 @@ Balatro koşusunu izleyen Türkçe, yerel yardımcı. Deck, ante, para, mevcut J
 
 ## Mac kurulumu (Steam sürümü)
 
-1. [Steamodded'ın Mac kurulum rehberine](https://docs.smods.dev/Installation/Installing%20Steamodded%20mac/) göre **Lovely + Steamodded** kur. Mac'te oyunu rehberdeki `run_lovely_macos.sh` ile başlat. Mod klasörünün yolu `~/Library/Application Support/Balatro/Mods` olmalı.
-2. Repo dizininde köprüyü kur:
-
-   ```bash
-   cd ~/Developer/balatro-coach
-   git pull
-   python3 install_mod.py
-   ```
-
-3. Balatro'yu modlu biçimde yeniden başlat ve bir koşu aç. Ayrı bir terminalde:
-
-   ```bash
-   cd ~/Developer/balatro-coach
-   python3 coach.py
-   ```
-
-Tarayıcıda açılan sayfanın üstündeki **Canlı koşu** bölümü deck ve oyun durumunu gösterir. Tarayıcı açılmazsa terminalde yazan `http://127.0.0.1:...` adresine git. Terminal açık kalmalı; kapatmak için Ctrl+C.
-
-Steamodded zaten kuruluysa yalnızca 2. ve 3. adımı uygula. Oyun modlu açılmazsa canlı durum görünmez. Dosyanın üretildiğini kontrol etmek için:
+Steam'deki Balatro'nun indirilmesi bitince Terminal'de:
 
 ```bash
-ls -l ~/Library/Application\ Support/Balatro/balatro_coach_state.json
+cd ~/Developer/balatro-coach
+git pull
+python3 setup_steam_mac.py
 ```
+
+Bu komut resmî Lovely ve Steamodded sürümlerini GitHub'dan indirip Mac'teki Steam Balatro'ya ve mod klasörüne yerleştirir; Coach köprüsünü de kurar. Mevcut Lovely/Steamodded kurulumuna dokunmaz. Oyun başka Steam kitaplığındaysa `python3 setup_steam_mac.py --game-dir "/oyunun/Balatro/klasörü"` çalıştır. Sorun yaşarsan [Steamodded'ın Mac kurulum rehberine](https://docs.smods.dev/Installation/Installing%20Steamodded%20mac/) bak.
+
+Balatro'yu **Steam'deki Oyna düğmesiyle değil**, Finder'da Steam > Balatro > Yönet > Yerel dosyalara göz at yoluyla açılan oyun klasöründeki `run_lovely_macos.sh` dosyasını Terminal'e sürükleyip Enter'a basarak aç. Bu, Mac'te modlu oyun için gereken yöntemdir. Bir koşu başlat. Ayrı bir Terminal penceresinde:
+
+```bash
+cd ~/Developer/balatro-coach
+python3 coach.py
+```
+
+Tarayıcıda açılan sayfanın üstündeki **Canlı koşu** bölümü deck ve oyun durumunu gösterir. Tarayıcı açılmazsa terminalde yazan `http://127.0.0.1:...` adresine git. Terminal açık kalmalı; kapatmak için Ctrl+C. Durum dosyasını denetlemek için: `ls -l ~/Library/Application\\ Support/Balatro/balatro_coach_state.json`.
+
+Zaten Lovely + Steamodded kuruluysa `python3 install_mod.py` yalnızca Coach köprüsünü kopyalar.
 
 ## Windows
 
