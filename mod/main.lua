@@ -48,12 +48,16 @@ local function card_info(card)
         name = center.name or card.ability and card.ability.name or '',
         set = center.set or '',
         cost = card.cost or 0,
+        sell_cost = card.sell_cost or 0,
+        kind = center.kind or '',
+        choose = center.config and center.config.choose or 0,
         rank = base.value or '',
         suit = base.suit or '',
         edition = card.edition and (card.edition.type or '') or '',
         enhancement = card.ability and card.ability.name or '',
         seal = card.seal or '',
         debuffed = card.debuff or false,
+        eternal = card.ability and card.ability.eternal or false,
     }
 end
 
@@ -103,6 +107,7 @@ local function snapshot()
         ante = game.round_resets.ante or 1,
         round = game.round or 0,
         money = game.dollars or 0,
+        reroll_cost = round.reroll_cost or 0,
         hands_left = round.hands_left or 0,
         discards_left = round.discards_left or 0,
         blind = {name = blind.name or '', chips = blind.chips or 0},
@@ -111,12 +116,18 @@ local function snapshot()
         hands = hands,
         vouchers = vouchers,
         jokers = area_cards(G.jokers),
+        joker_slots = G.jokers and G.jokers.config and G.jokers.config.card_limit or 0,
+        consumables = area_cards(G.consumeables),
+        consumable_slots = G.consumeables and G.consumeables.config and G.consumeables.config.card_limit or 0,
+        last_tarot_planet = type(game.last_tarot_planet) == 'string' and game.last_tarot_planet or '',
         hand_cards = area_cards(G.hand),
         deck_cards = area_cards(G.deck),
         discard_cards = area_cards(G.discard),
         shop_cards = area_cards(G.shop_jokers),
         shop_vouchers = area_cards(G.shop_vouchers),
         shop_boosters = area_cards(G.shop_booster),
+        pack_cards = area_cards(G.pack_cards),
+        pack_choices = game.pack_choices or 0,
     }
 end
 
