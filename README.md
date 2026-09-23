@@ -29,6 +29,12 @@ Tarayıcıda açılan sayfanın üstündeki **Canlı koşu** bölümü deck ve o
 
 Zaten Lovely + Steamodded kuruluysa `python3 install_mod.py` yalnızca Coach köprüsünü kopyalar.
 
+## Adım adım koçluk
+
+Canlı ekrandaki **Şimdi ne yapayım?** alanı her aşamada bir sonraki eylemi gösterir: shop'tan ürün/paket satın alma veya reroll, açılan Celestial/Arcana/Spectral/Buffoon/Standard paketindeki kartı seçme, blind'ı başlatma, elde oynanacak ya da atılacak kartlar, tur sonunda Cash Out. Paket içeriği **ancak açıldıktan sonra** oyundan okunur; birden fazla kart seçiliyorsa sonraki seçim yeniden hesaplanır. Tüketilebilirlerde güvenle kullanılabilecek kart varsa önce onu söyler.
+
+Bu sürümde kararlar basit kurallara dayanır. Joker tetiklerinin tamamı, Tarot/Spectral hedeflerinin tüm koşulları, boss, paket içeriğinin açılmadan olasılığı ve tam oyun skoru hesaplanmaz. Özellikle Joker satmak veya desteyi kalıcı değiştiren bir kart seçmek gerektiğinde oyun açıklamasını kontrol et. Bağlantı çalışsa da bu kararları henüz gerçek bir Steam koşusunda paket paket doğrulamadık.
+
 ## Windows
 
 [Steamodded'ın Windows rehberine](https://docs.smods.dev/Installation/Installing%20Steamodded%20windows/) göre Lovely ve Steamodded'ı kur. Sonra `py install_mod.py` ve `py coach.py` çalıştır. Oyun modunu yüklemek için Balatro'yu yeniden aç.
