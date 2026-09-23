@@ -29,9 +29,9 @@ def read_live_state(path: Path | None = None) -> dict:
             for child in mods.iterdir()
         )
         if not has_loader:
-            message = "Steamodded kurulu görünmüyor. Mac kurulum rehberindeki Lovely + Steamodded adımlarını tamamla, ardından python install_mod.py çalıştır."
+            message = "Steamodded kurulu görünmüyor. Mac kurulum rehberindeki Lovely + Steamodded adımlarını tamamla, ardından python3 install_mod.py çalıştır."
         elif not (mods / "balatro_coach_bridge/main.lua").is_file():
-            message = "Oyun köprüsü eksik. Bu repo klasöründe python install_mod.py çalıştır; sonra Balatro'yu modlu biçimde yeniden aç."
+            message = "Oyun köprüsü eksik. Bu repo klasöründe python3 install_mod.py çalıştır; sonra Balatro'yu modlu biçimde yeniden aç."
         else:
             message = "Köprü kurulu, fakat oyun durum dosyası yok. Balatro'yu run_lovely_macos.sh ile modlu aç ve bir koşu başlat."
         return {"connected": False, "message": message, "path": str(path)}
