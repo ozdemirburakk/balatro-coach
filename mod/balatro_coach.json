@@ -1,0 +1,9 @@
+{
+  "id": "balatro_coach_bridge",
+  "name": "Balatro Coach Bridge",
+  "author": ["Balatro Coach"],
+  "description": "Exports read-only local run snapshots for Balatro Coach.",
+  "prefix": "bcoach",
+  "main_file": "main.lua",
+  "version": "0.2.0"
+}
