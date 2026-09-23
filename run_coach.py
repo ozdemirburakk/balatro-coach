@@ -23,7 +23,18 @@ def default_state_file() -> Path:
 def read_live_state(path: Path | None = None) -> dict:
     path = path or default_state_file()
     if not path.is_file():
-        return {"connected": False, "message": "Canlı durum bulunamadı. Steamodded ve mod/balatro_coach_bridge kurulu olmalı.", "path": str(path)}
+        mods = path.parent / "Mods"
+        has_loader = mods.is_dir() and any(
+            child.is_dir() and ("smods" in child.name.casefold() or "steamodded" in child.name.casefold())
+            for child in mods.iterdir()
+        )
+        if not has_loader:
+            message = "Steamodded kurulu görünmüyor. Mac kurulum rehberindeki Lovely + Steamodded adımlarını tamamla, ardından python install_mod.py çalıştır."
+        elif not (mods / "balatro_coach_bridge/main.lua").is_file():
+            message = "Oyun köprüsü eksik. Bu repo klasöründe python install_mod.py çalıştır; sonra Balatro'yu modlu biçimde yeniden aç."
+        else:
+            message = "Köprü kurulu, fakat oyun durum dosyası yok. Balatro'yu run_lovely_macos.sh ile modlu aç ve bir koşu başlat."
+        return {"connected": False, "message": message, "path": str(path)}
     try:
         state = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
