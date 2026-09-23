@@ -82,6 +82,8 @@ async function refreshLive(){
     info.textContent=g.deck+" · Ante "+g.ante+" · $"+g.money+" · "+(stages[g.stage]||"Oyun devam ediyor")+
       (g.stage==="SELECTING_HAND"?" · Kalan el: "+g.hands_left+" · Discard: "+g.discards_left:"");
     target.append(info);
+    const plan=document.createElement("p");plan.className="muted";
+    plan.textContent="El eğilimi: "+g.plan_reason;target.append(plan);
     if(g.jokers.length){const own=document.createElement("p");own.textContent="Joker'lar: "+g.jokers.join(", ");target.append(own)}
     const decision=document.createElement("div");decision.className="decision";
     const next=document.createElement("h3");next.textContent="Şimdi ne yapayım?";decision.append(next);
