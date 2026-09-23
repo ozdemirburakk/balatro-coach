@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balatro Coach</title>
+<style>
+  :root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#141927;color:#edf0f8}
+  body{max-width:960px;margin:0 auto;padding:24px}
+  h1{margin-bottom:4px} p{color:#bac3d2}
+  .panel{background:#212a3c;border:1px solid #3a475e;border-radius:14px;padding:20px;margin:18px 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  label{display:flex;flex-direction:column;gap:6px;font-weight:650}
+  input,select,textarea,button{font:inherit;border-radius:8px;border:1px solid #586780;background:#111827;color:#fff;padding:10px}
+  input{min-width:0} input[type=number]{max-width:130px}
+  button{cursor:pointer;background:#496be1;border-color:#7089ee;font-weight:700}
+  button.secondary{background:#303c55} button:hover{filter:brightness(1.15)}
+  .item{display:grid;grid-template-columns:minmax(200px,1fr) 105px 45px;gap:8px;margin:8px 0}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .result{background:#172133;border-radius:10px;padding:12px;margin:10px 0;border-left:5px solid #7b93f0}
+  .result small{color:#bac3d2}.result p{margin:6px 0}
+  .muted{color:#a6b2c4} #error{color:#ffb2b2}
+  #ocrResult{white-space:pre-wrap;max-height:180px;overflow:auto;background:#111827;padding:12px;border-radius:8px}
+  @media(max-width:550px){.item{grid-template-columns:1fr 70px 40px}body{padding:12px}}
+</style>
+</head>
+<body>
+<h1>Balatro Coach</h1>
+<p>Canlı koşu yardımcısı · 150 Joker, 32 Voucher, 12 Planet, 22 Tarot, 18 Spectral</p>
+<section class="panel">
+  <h2>Canlı koşu <small class="muted" id="liveStatus">bağlantı aranıyor…</small></h2>
+  <div id="live" aria-live="polite">Steamodded köprüsünden veri bekleniyor.</div>
+</section>
+<details><summary>Elle shop değerlendirmesi (mod olmadan da çalışır)</summary>
+<section class="panel">
+  <div class="grid">
+    <label>Para ($)<input id="money" type="number" min="0" value="16"></label>
+    <label>Ante<input id="ante" type="number" min="1" value="1"></label>
+    <label>Ana el<select id="hand"></select></label>
+  </div>
+  <label style="margin-top:14px">Mevcut Joker’lar (virgülle ayır)<input id="jokers" value="Wily Joker"></label>
+  <p>Shop ürününün tooltip adını seç, oyun fiyatını yaz. Önceki koşudan örnek değerler gelmiştir; yeni koşuda değiştir.</p>
+  <div id="items"></div>
+  <datalist id="names"></datalist>
+  <div class="actions">
+    <button class="secondary" id="add">+ Ürün ekle</button>
+    <button id="calculate">Önerileri hesapla</button>
+  </div>
+</section>
+<section class="panel">
+  <h2>Sonuç</h2>
+  <div id="results" aria-live="polite"></div>
+</section>
+</details>
+<section class="panel">
+  <h2>Tooltip OCR <small class="muted">(macOS, isteğe bağlı)</small></h2>
+  <p>OCR’ye bastıktan sonra 3 saniye içinde oyuna dönüp kartın üstüne fareyi getir. Ekran görüntüsü geçici olarak alınır ve silinir. Tesseract kurulu olmalı.</p>
+  <button class="secondary" id="ocr">3 saniye sonra tara</button>
+  <div id="ocrMatches"></div>
+  <details><summary>Ham OCR metni</summary><pre id="ocrResult"></pre></details>
+</section>
+<p id="error" role="alert"></p>
+<script>
+const token="__TOKEN__";
+let catalog=[];
+const $=id=>document.getElementById(id);
+async function refreshLive(){
+  try{
+    const response=await fetch("/state",{cache:"no-store"});const data=await response.json();
+    const target=$("live");target.replaceChildren();
+    if(!data.connected){
+      $("liveStatus").textContent="bağlı değil";
+      const p=document.createElement("p");p.textContent=data.message;target.append(p);return;
+    }
+    $("liveStatus").textContent="oyundan veri geliyor";
+    const g=data.guidance;
+    const info=document.createElement("p");
+    info.textContent=g.deck+" · Ante "+g.ante+" · $"+g.money+" · "+g.stage+" · ana el "+g.main_hand;
+    target.append(info);
+    if(g.jokers.length){const own=document.createElement("p");own.textContent="Joker'lar: "+g.jokers.join(", ");target.append(own)}
+    const next=document.createElement("h3");next.textContent="Öneri: "+g.next;target.append(next);
+    const detail=document.createElement("p");detail.textContent=g.detail;target.append(detail);
+    if(g.shop.length){const title=document.createElement("h4");title.textContent="Shop";target.append(title);
+      for(const item of g.shop){
+        const card=document.createElement("div");card.className="result";
+        const h=document.createElement("strong");h.textContent=item.name+" · $"+item.price;
+        const p=document.createElement("p");p.textContent=item.reasons.join(" · ");card.append(h,p);target.append(card);
+      }
+    }
+  }catch(error){$("liveStatus").textContent="bağlantı hatası";showError(error.message)}
+}
+setInterval(refreshLive,1500);refreshLive();
+function addRow(name="",price=3){
+  const row=document.createElement("div");row.className="item";
+  const item=document.createElement("input");item.setAttribute("list","names");item.placeholder="Ürün adı";item.value=name;
+  const cost=document.createElement("input");cost.type="number";cost.min=0;cost.value=price;cost.setAttribute("aria-label","Fiyat");
+  const remove=document.createElement("button");remove.textContent="×";remove.className="secondary";remove.setAttribute("aria-label","Ürünü kaldır");remove.onclick=()=>row.remove();
+  row.append(item,cost,remove);$("items").append(row);return row;
+}
+async function api(path,body){
+  const response=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json","X-Coach-Token":token},body:JSON.stringify(body)});
+  const data=await response.json();if(!response.ok)throw Error(data.error||"İstek başarısız.");return data;
+}
+function showError(message){$("error").textContent=message||""}
+async function calculate(){
+  showError("");
+  const items=Array.from(document.querySelectorAll(".item")).map(row=>({name:row.children[0].value,price:row.children[1].value}));
+  try {
+    const data=await api("/evaluate",{money:$("money").value,ante:$("ante").value,hand:$("hand").value,jokers:$("jokers").value,items});
+    const target=$("results");target.replaceChildren();
+    const summary=document.createElement("p");summary.textContent="Şu an $"+data.money+" · tahmini faiz $"+data.interest;target.append(summary);
+    for(const r of data.results){
+      const box=document.createElement("div");box.className="result";
+      const heading=document.createElement("strong");heading.textContent=r.label+" · "+r.name;
+      const kind=document.createElement("small");kind.textContent="  ("+r.category+")";
+      box.append(heading,kind);
+      for(const note of r.notes){const p=document.createElement("p");p.textContent=note;box.append(p)}
+      target.append(box);
+    }
+  }catch(error){showError(error.message)}
+}
+$("add").onclick=()=>addRow();
+$("calculate").onclick=calculate;
+$("ocr").onclick=async()=>{
+  showError("");$("ocrMatches").textContent="3 saniye sonra ekran okunacak; oyuna dönüp kartı işaretle…";
+  try{
+    const data=await api("/ocr",{});$("ocrResult").textContent=data.raw||"Metin bulunamadı.";
+    $("ocrMatches").textContent=data.matches.length?"Olası adlar (oyunda doğrula): "+data.matches.join(", "):"Katalogda eşleşen ad bulunamadı; ham metni kontrol et.";
+  }catch(error){$("ocrMatches").textContent="";showError(error.message)}
+};
+fetch("/catalog").then(r=>r.json()).then(data=>{
+  catalog=data.items;
+  for(const hand of data.hands){const option=document.createElement("option");option.textContent=hand;$("hand").append(option)}
+  $("hand").value="Three of a Kind";
+  for(const card of catalog){const opt=document.createElement("option");opt.value=card.name;$("names").append(opt)}
+  addRow("Venus",3);addRow("Uranus",3);addRow("Overstock",10);
+  calculate();
+}).catch(error=>showError(error.message));
+</script>
+</body>
+</html>
