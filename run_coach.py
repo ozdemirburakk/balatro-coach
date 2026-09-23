@@ -4,9 +4,11 @@ from __future__ import annotations
 import itertools
 import json
 import os
+import random
 import sys
 import time
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 
 
@@ -154,6 +156,133 @@ def _base_score(cards: list[dict], hand: str, hands: dict) -> dict:
     return {"chips": chips, "mult": mult, "score": int(chips * mult)}
 
 
+TYPE_MULT = {"j_jolly": ("Pair", 8), "j_zany": ("Three of a Kind", 12),
+             "j_mad": ("Two Pair", 10), "j_crazy": ("Straight", 12),
+             "j_droll": ("Flush", 10)}
+TYPE_CHIPS = {"j_sly": ("Pair", 50), "j_wily": ("Three of a Kind", 100),
+              "j_clever": ("Two Pair", 80), "j_devious": ("Straight", 100),
+              "j_crafty": ("Flush", 80)}
+TYPE_XMULT = {"j_duo": ("Pair", 2), "j_trio": ("Three of a Kind", 3),
+              "j_family": ("Four of a Kind", 4), "j_order": ("Straight", 3),
+              "j_tribe": ("Flush", 2)}
+SUIT_MULT = {"j_greedy_joker": "Diamonds", "j_lusty_joker": "Hearts",
+             "j_wrathful_joker": "Spades", "j_gluttenous_joker": "Clubs"}
+SUPPORTED_JOKERS = (set(TYPE_MULT) | set(TYPE_CHIPS) | set(TYPE_XMULT) |
+                    set(SUIT_MULT) | {"j_joker", "j_gros_michel", "j_popcorn", "j_green_joker",
+                    "j_ride_the_bus", "j_stuntman", "j_bull", "j_banner", "j_blue_joker",
+                    "j_ice_cream", "j_runner", "j_scary_face", "j_smiley", "j_scholar",
+                    "j_fibonacci", "j_even_steven", "j_odd_todd", "j_walkie_talkie",
+                    "j_arrowhead", "j_onyx_agate", "j_cavendish", "j_constellation",
+                    "j_hologram", "j_madness", "j_ramen", "j_steel_joker", "j_vampire",
+                    "j_half", "j_mystic_summit", "j_supernova", "j_photograph",
+                    "j_hanging_chad", "j_baron", "j_shoot_the_moon", "j_blackboard",
+                    "j_raised_fist", "j_splash"})
+
+
+def _stats(card: dict) -> dict:
+    return card.get("stats") if isinstance(card.get("stats"), dict) else {}
+
+
+def _extra(card: dict) -> dict:
+    value = _stats(card).get("extra")
+    return value if isinstance(value, dict) else {}
+
+
+def _number(value: object, default: float = 0) -> float:
+    return value if isinstance(value, (int, float)) else default
+
+
+def _estimated_score(selected: list[dict], hand: str, state: dict, indices: tuple[int, ...]) -> dict:
+    base = _base_score(selected, hand, state.get("hands") or {})
+    jokers = state.get("jokers") or []
+    owned = {c.get("key") for c in jokers if not c.get("debuffed")}
+    normal = _scoring_cards(selected, hand)
+    played = selected if "j_splash" in owned else normal
+    chips = base["chips"] + sum(_number(_stats(c).get("bonus")) + _number(_stats(c).get("perma_bonus"))
+                                for c in played)
+    if "j_splash" in owned:
+        scoring_ids = {id(c) for c in normal}
+        chips += sum(RANK_CHIPS.get(c.get("rank"), 0) for c in selected if id(c) not in scoring_ids)
+    mult = float(base["mult"])
+    for card in played:
+        stats = _stats(card)
+        edition = card.get("edition_stats") if isinstance(card.get("edition_stats"), dict) else {}
+        chips += _number(edition.get("chips"))
+        mult += _number(stats.get("mult")) + _number(edition.get("mult"))
+        mult *= max(1, _number(stats.get("x_mult"), 1)) * max(1, _number(edition.get("x_mult"), 1))
+    first = played[0] if played else None
+    extra_triggers = 2 if "j_hanging_chad" in owned and first else 0
+    if first:
+        stats = _stats(first)
+        chips += extra_triggers * (RANK_CHIPS.get(first.get("rank"), 0) +
+                                  _number(stats.get("bonus")) + _number(stats.get("perma_bonus")))
+        mult += extra_triggers * _number(stats.get("mult"))
+        mult *= max(1, _number(stats.get("x_mult"), 1)) ** extra_triggers
+    if "j_photograph" in owned and first and first.get("rank") in ("Jack", "Queen", "King"):
+        mult *= 2 ** (1 + extra_triggers)
+    remaining = [c for i, c in enumerate(state.get("hand_cards") or []) if i not in indices]
+    for card in remaining:
+        stats = _stats(card)
+        mult += _number(stats.get("h_mult"))
+        mult *= max(1, _number(stats.get("h_x_mult"), 1))
+    unknown = []
+    for joker in jokers:
+        key = joker.get("key")
+        if joker.get("debuffed"):
+            continue
+        if key not in SUPPORTED_JOKERS:
+            unknown.append(joker.get("name") or key or "Joker")
+            key = None
+        stats = _stats(joker)
+        extra = _extra(joker)
+        c, m, x = 0, 0, 1.0
+        if key in TYPE_MULT and hand == TYPE_MULT[key][0]:
+            m += _number(stats.get("t_mult"), TYPE_MULT[key][1])
+        if key in TYPE_CHIPS and hand == TYPE_CHIPS[key][0]:
+            c += _number(stats.get("t_chips"), TYPE_CHIPS[key][1])
+        if key in TYPE_XMULT and hand == TYPE_XMULT[key][0]:
+            x *= _number(stats.get("x_mult"), TYPE_XMULT[key][1])
+        if key in ("j_joker", "j_gros_michel", "j_popcorn", "j_green_joker", "j_ride_the_bus"):
+            m += _number(stats.get("mult"), 4 if key == "j_joker" else 0)
+        if key == "j_stuntman": c += _number(extra.get("chip_mod"), 250)
+        if key == "j_bull": c += 2 * _number(state.get("money"))
+        if key == "j_banner": c += 30 * _number(state.get("discards_left"))
+        if key == "j_blue_joker": c += 2 * len(state.get("deck_cards") or [])
+        if key in ("j_ice_cream", "j_runner"): c += _number(extra.get("chips"))
+        if key == "j_half" and len(selected) <= 3: m += 20
+        if key == "j_mystic_summit" and not state.get("discards_left"): m += 15
+        if key == "j_supernova": m += _number((state.get("hands") or {}).get(hand, {}).get("played"))
+        if key in SUIT_MULT: m += 3 * sum(ca.get("suit") == SUIT_MULT[key] for ca in played)
+        if key == "j_scary_face": c += 30 * sum(ca.get("rank") in ("Jack", "Queen", "King") for ca in played)
+        if key == "j_smiley": m += 5 * sum(ca.get("rank") in ("Jack", "Queen", "King") for ca in played)
+        if key == "j_scholar":
+            c += 20 * sum(ca.get("rank") == "Ace" for ca in played)
+            m += 4 * sum(ca.get("rank") == "Ace" for ca in played)
+        if key == "j_fibonacci": m += 8 * sum(ca.get("rank") in ("Ace", "2", "3", "5", "8") for ca in played)
+        if key == "j_even_steven": m += 4 * sum(ca.get("rank") in ("2", "4", "6", "8", "10") for ca in played)
+        if key == "j_odd_todd": c += 31 * sum(ca.get("rank") in ("Ace", "3", "5", "7", "9") for ca in played)
+        if key == "j_walkie_talkie":
+            hits = sum(ca.get("rank") in ("4", "10") for ca in played)
+            c += 10 * hits; m += 4 * hits
+        if key == "j_arrowhead": c += 50 * sum(ca.get("suit") == "Spades" for ca in played)
+        if key == "j_onyx_agate": m += 7 * sum(ca.get("suit") == "Clubs" for ca in played)
+        if key in ("j_cavendish", "j_constellation", "j_hologram", "j_madness", "j_ramen", "j_steel_joker", "j_vampire"):
+            x *= _number(stats.get("x_mult"), _number(extra.get("Xmult"), 3 if key == "j_cavendish" else 1))
+        if key == "j_baron": x *= 1.5 ** sum(ca.get("rank") == "King" for ca in remaining)
+        if key == "j_shoot_the_moon": m += 13 * sum(ca.get("rank") == "Queen" for ca in remaining)
+        if key == "j_blackboard" and remaining and all(ca.get("suit") in ("Clubs", "Spades") for ca in remaining):
+            x *= 3
+        if key == "j_raised_fist" and remaining:
+            m += 2 * min(RANK_CHIPS.get(ca.get("rank"), 0) for ca in remaining)
+        chips += c
+        mult = (mult + m) * max(1, x)
+        edition = joker.get("edition_stats") if isinstance(joker.get("edition_stats"), dict) else {}
+        chips += _number(edition.get("chips"))
+        mult = (mult + _number(edition.get("mult"))) * max(1, _number(edition.get("x_mult"), 1))
+    return {"chips": round(chips, 1), "mult": round(mult, 2), "score": max(0, int(chips * mult)),
+            "base": base["score"], "unknown_jokers": unknown}
+
+
 def _choose_hand(state: dict, main_hand: str | None) -> dict | None:
     cards = state.get("hand_cards") or []
     if not cards:
@@ -161,14 +290,13 @@ def _choose_hand(state: dict, main_hand: str | None) -> dict | None:
     if len(cards) > 20:
         return {"note": "Eldeki kart sayısı çok yüksek; el seçimini oyunda yap."}
     best = None
-    hands = state.get("hands") or {}
     for size in range(1, min(5, len(cards)) + 1):
         for indices in itertools.combinations(range(len(cards)), size):
             selected = [cards[i] for i in indices]
             hand = _hand_type(selected)
-            estimate = _base_score(selected, hand, hands)
-            # A small preference for the leveled/planned hand when two base scores are close.
-            priority = estimate["score"] * (1.06 if hand == main_hand else 1)
+            estimate = _estimated_score(selected, hand, state, indices)
+            # Prefer the established hand only when estimated scores are close.
+            priority = estimate["score"] * (1.03 if hand == main_hand else 1)
             if any(c.get("debuffed") for c in selected):
                 priority *= 0.5
             if best is None or priority > best[0]:
@@ -181,30 +309,86 @@ def _choose_hand(state: dict, main_hand: str | None) -> dict | None:
 
 def _discard_plan(state: dict, main_hand: str | None, candidate: dict) -> list[dict]:
     cards = state.get("hand_cards") or []
-    if not cards or int(state.get("discards_left") or 0) < 1:
+    deck = state.get("deck_cards") or []
+    if not cards or not deck or int(state.get("discards_left") or 0) < 1:
         return []
-    # Preserve a ready scoring hand. If the blind needs more points, draw toward
-    # high pairs or the planned flush instead of throwing away every non-Ace.
     blind_left = max(0, int((state.get("blind") or {}).get("chips") or 0) - int(state.get("chips_scored") or 0))
-    if blind_left and candidate["score"] >= blind_left:
+    if blind_left <= 0 or candidate["score"] >= blind_left:
         return []
-    if candidate["hand"] not in ("High Card", "Pair", "Two Pair"):
+    if candidate.get("unknown_jokers") and candidate["score"] >= blind_left * 0.25:
+        return []  # Unmodelled Joker effects may already clear the blind.
+    if len(cards) > 12:
         return []
+    outcome = _sample_discards(json.dumps({
+        "cards": cards, "deck": deck, "jokers": state.get("jokers") or [],
+        "hands": state.get("hands") or {}, "money": state.get("money") or 0,
+        "discards_left": state.get("discards_left") or 0,
+        "main_hand": main_hand, "remaining": blind_left,
+        "current_score": candidate["score"], "hands_left": state.get("hands_left") or 0,
+    }, sort_keys=True, ensure_ascii=False))
+    if not outcome:
+        return []
+    indices, expected, chance = outcome
+    candidate["discard_expected"] = round(expected)
+    candidate["discard_win_chance"] = round(chance * 100)
+    return [{"index": i + 1, "card": _card_label(cards[i])} for i in indices]
+
+
+@lru_cache(maxsize=64)
+def _sample_discards(snapshot: str) -> tuple[tuple[int, ...], float, float] | None:
+    state = json.loads(snapshot)
+    cards, deck = state["cards"], state["deck"]
+    n = len(cards)
+    if n < 3:
+        return None
     ranks = Counter(c.get("rank") for c in cards)
     suits = Counter(c.get("suit") for c in cards)
-    if main_hand in ("Flush", "Straight Flush") and max(suits.values()) >= 3:
-        target = max(suits, key=suits.get)
-        keep = [i for i, c in enumerate(cards) if c.get("suit") == target]
-    elif max(ranks.values()) >= 2:
-        target = max(ranks, key=lambda rank: (ranks[rank], str(rank)))
-        keep = [i for i, c in enumerate(cards) if c.get("rank") == target]
-        if len(keep) < 3 and len(cards) >= 6:
-            other = [i for i in range(len(cards)) if i not in keep]
-            keep.append(max(other, key=lambda i: RANK_CHIPS.get(cards[i].get("rank"), 0)))
+    sorted_ranks = sorted(range(n), key=lambda i: RANK_CHIPS.get(cards[i].get("rank"), 0), reverse=True)
+    keep_options = [set(sorted_ranks[:size]) for size in (1, 2, 3, 4) if size < n]
+    for rank, count in ranks.items():
+        if count >= 2:
+            keep_options.append({i for i, c in enumerate(cards) if c.get("rank") == rank})
+    for suit, count in suits.items():
+        if count >= 3:
+            keep_options.append({i for i, c in enumerate(cards) if c.get("suit") == suit})
+    for size in (1, 2, 3):
+        keep_options.append(set(range(n)) - set(sorted_ranks[-size:]))
+    # Keep the existing best scoring combination as a candidate as well.
+    now = _choose_hand({"hand_cards": cards, "hands": state["hands"], "jokers": state["jokers"],
+                        "money": state["money"], "deck_cards": deck,
+                        "discards_left": state["discards_left"]}, state["main_hand"])
+    if now and now.get("selection"):
+        keep_options.append({c["index"] - 1 for c in now["selection"]})
+    options = {tuple(i for i in range(n) if i not in keep) for keep in keep_options}
+    options = sorted(option for option in options if 1 <= len(option) <= min(5, len(deck), n - 1))
+    if not options:
+        return None
+    rng = random.Random(hash(snapshot))
+    draws_by_size = {size: [rng.sample(deck, size) for _ in range(32)] for size in {len(option) for option in options}}
+    outcomes = []
+    for option in options:
+        scores = []
+        for drawn in draws_by_size[len(option)]:
+            next_state = {
+                "hand_cards": [card for i, card in enumerate(cards) if i not in option] + drawn,
+                "hands": state["hands"], "jokers": state["jokers"], "money": state["money"],
+                "deck_cards": deck[:max(0, len(deck) - len(option))],
+                "discards_left": max(0, int(state["discards_left"]) - 1),
+            }
+            predicted = _choose_hand(next_state, state["main_hand"])
+            scores.append(predicted["score"] if predicted else 0)
+        expected = sum(scores) / len(scores)
+        chance = sum(score >= state["remaining"] for score in scores) / len(scores)
+        # A single lucky sample must not outweigh a consistently stronger hand.
+        utility = expected + chance * min(state["remaining"], expected * 2)
+        outcomes.append((utility, expected, chance, option))
+    _, expected, chance, option = max(outcomes)
+    current = state["current_score"]
+    if int(state["hands_left"]) <= 1:
+        worthwhile = (chance >= 0.16 and expected >= current * 0.8) or expected >= current * 1.2
     else:
-        keep = sorted(range(len(cards)), key=lambda i: RANK_CHIPS.get(cards[i].get("rank"), 0), reverse=True)[:3]
-    return [{"index": i + 1, "card": _card_label(cards[i])}
-            for i in range(len(cards)) if i not in keep][:5]
+        worthwhile = (chance >= 0.25 and current < state["remaining"] * 0.75) or expected >= current * 1.6
+    return (option, expected, chance) if worthwhile else None
 
 
 def _joker_value(card: dict, state: dict, by_id: dict, main_hand: str | None) -> tuple[int, str]:
@@ -231,6 +415,12 @@ def _joker_value(card: dict, state: dict, by_id: dict, main_hand: str | None) ->
         score += 3; reasons.append("mevcut Mult ile çarpan uyumu")
     if "scaling" in tags and int(state.get("ante") or 1) <= 3:
         score += 2; reasons.append("erken aşamada büyüyebilir")
+    if tags & {"chips", "mult", "xmult"} and len(owned) < 3:
+        score += 3; reasons.append("puan üreten Joker sayısı az")
+    if "xmult" in tags and any("mult" in role for role in owned_tags):
+        score += 3; reasons.append("mevcut Mult'u çarpar")
+    if card.get("key") in ("j_blueprint", "j_brainstorm") and owned:
+        score += 6; reasons.append("mevcut Joker etkisini kopyalayabilir; yerleşimini kontrol et")
     return score, ", ".join(reasons) if reasons else "Joker etkisini oyun tooltip'inden doğrula."
 
 
@@ -429,7 +619,7 @@ def guide(state: dict) -> dict:
                 score = 8 if has_room and len(state.get("jokers") or []) < 3 else (5 if has_room else -100)
                 reasons = ["Açınca Joker seçeneklerine bakacağım." if has_room else "Joker slotu dolu."]
             elif kind == "Celestial":
-                score = 9 if main_hand or money - price >= 20 else 4
+                score = 7 if main_hand else 4
                 reasons = ["Gezegenler açılınca hangi elin gelişeceğini göreceğim."]
             elif kind == "Arcana":
                 score, reasons = 5, ["Tarot seçenekleri açılınca etkilerine bakacağım."]
@@ -478,19 +668,27 @@ def guide(state: dict) -> dict:
             chosen = ", ".join(f"{c['index']}. {c['card']}" for c in candidate["selection"])
             blind_left = max(0, int((state.get("blind") or {}).get("chips") or 0) - int(state.get("chips_scored") or 0))
             base["score"] = {"chips": candidate["chips"], "mult": candidate["mult"],
-                             "base": candidate["score"], "remaining": blind_left,
+                             "estimate": candidate["score"], "base": candidate["base"],
+                             "unknown_jokers": candidate["unknown_jokers"],
+                             "remaining": blind_left,
                              "target": (state.get("blind") or {}).get("chips", 0)}
             discard = _discard_plan(state, main_hand, candidate)
             if discard and blind_left > 0:
                 selected = ", ".join(f"{c['index']}. {c['card']}" for c in discard)
                 base["next"] = f"{selected} kartlarını seç ve 'Discard' düğmesine bas."
-                base["detail"] = f"Yüksek kartları/çifti tutup daha güçlü el arıyoruz. Şu anki hazır el: {HAND_LABELS[candidate['hand']]} ({chosen}). Bu tercih kesin skor garantisi vermez."
+                base["detail"] = (f"Kalan desteden örnek çekilişlerde yeni elin ortalama tahmini {candidate['discard_expected']} puan; "
+                                  f"bu hamlede blind'ı geçme oranı %{candidate['discard_win_chance']}. "
+                                  f"Şu anki en iyi el: {HAND_LABELS[candidate['hand']]} ({chosen}), tahmini {candidate['score']} puan. "
+                                  "Bu oran tüm koşuyu kazanma olasılığı değildir.")
             else:
                 base["next"] = f"{chosen} kartlarını seç ve 'Play Hand' düğmesine bas."
-                base["detail"] = f"Hazır el: {HAND_LABELS[candidate['hand']]}. Hesaplanan taban puan yalnızca el seviyesini ve normal kart değerlerini içerir."
-            if jokers or any(c.get("edition") or c.get("seal") or c.get("debuffed") or
-                             c.get("enhancement") not in ("", "Default Base") for c in state.get("hand_cards", [])):
-                base["detail"] += " Joker, kart etkileri veya boss nedeniyle oyundaki gerçek skor farklı olabilir."
+                base["detail"] = f"Hazır el: {HAND_LABELS[candidate['hand']]}. Joker ve kart verisiyle tahmin: {candidate['score']} puan; blind için kalan {blind_left}."
+            if candidate["unknown_jokers"]:
+                base["detail"] += " Etkisi hesaplanamayan Joker'lar: " + ", ".join(candidate["unknown_jokers"]) + "."
+            if any(c.get("seal") or c.get("debuffed") or c.get("enhancement") not in (None, "", "Default Base", "Base Card")
+                   for c in state.get("hand_cards", [])):
+                base["detail"] += " Kartın özel etkisi veya debuff tahmini değiştirebilir."
+            base["detail"] += " Boss blind ve oyun içi tetiklemeler tahmini değiştirebilir."
         else:
             base["next"] = "Eldeki kartlar bekleniyor."
     else:
