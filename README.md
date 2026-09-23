@@ -2,7 +2,7 @@
 
 Balatro koşusunu izleyen Türkçe, yerel yardımcı. Deck, ante, para, mevcut Joker'lar, shop ve eldeki kartları **oyundan** okur; oyun aşaması değiştikçe öneriyi yeniler. Oyun adına tıklamaz veya hamle yapmaz. Python arayüzü tarayıcıda açılır; **Tkinter ve pip kurulumu gerekmez**.
 
-> Katalog Balatro 1.0 için 150 Joker, 32 Voucher, 12 Planet, 22 Tarot, 18 Spectral ve 15 Deck adı içerir. Tam oyun simülasyonu değildir: Joker'ların bütün koşulları, enhancement, olasılıklar, gerçek skor, boss etkileri, paket içeriği ve skip tag değeri henüz hesaplanmaz. Katalog adı tanımak ile kartın değerini kusursuz değerlendirmek farklı şeylerdir. Belirsiz önerileri oyundaki tooltip'e göre doğrula.
+> Katalog Balatro 1.0 için 150 Joker, 32 Voucher, 12 Planet, 22 Tarot, 18 Spectral ve 15 Deck adı içerir. Tam oyun simülasyonu değildir: bazı yaygın Joker ve kart etkileri tahmini skora katılır; kalan Joker koşulları, seal, boss etkileri, paket içeriği ve skip tag değeri eksiktir. Katalog adı tanımak ile kartın değerini kusursuz değerlendirmek farklı şeylerdir. Belirsiz önerileri oyundaki tooltip'e göre doğrula.
 
 ## Mac kurulumu (Steam sürümü)
 
@@ -33,7 +33,7 @@ Zaten Lovely + Steamodded kuruluysa `python3 install_mod.py` yalnızca Coach kö
 
 Canlı ekrandaki **Şimdi ne yapayım?** alanı her aşamada bir sonraki eylemi gösterir: shop'tan ürün/paket satın alma veya reroll, açılan Celestial/Arcana/Spectral/Buffoon/Standard paketindeki kartı seçme, blind'ı başlatma, elde oynanacak ya da atılacak kartlar, tur sonunda Cash Out. Paket içeriği **ancak açıldıktan sonra** oyundan okunur; birden fazla kart seçiliyorsa sonraki seçim yeniden hesaplanır. Tüketilebilirlerde güvenle kullanılabilecek kart varsa önce onu söyler.
 
-Bu sürümde kararlar basit kurallara dayanır. Joker tetiklerinin tamamı, Tarot/Spectral hedeflerinin tüm koşulları, boss, paket içeriğinin açılmadan olasılığı ve tam oyun skoru hesaplanmaz. Özellikle Joker satmak veya desteyi kalıcı değiştiren bir kart seçmek gerektiğinde oyun açıklamasını kontrol et. Bağlantı çalışsa da bu kararları henüz gerçek bir Steam koşusunda paket paket doğrulamadık.
+Eldeki oynama önerisi bazı Joker etkilerini ve eldeki kartların tahmini skorunu kullanır. Discard önerisi kalan desteden örnek çekilişlerle sonuçları karşılaştırır; gösterilen oran yalnızca sıradaki eli blind hedefiyle karşılaştırır. Shop kararı ekonomi ve bilinen Joker rollerine dayanır. Joker tetiklerinin tamamı, Tarot/Spectral hedeflerinin tüm koşulları, boss, paket içeriğinin açılmadan olasılığı ve tam oyun skoru hesaplanmaz. Özellikle Joker satmak veya desteyi kalıcı değiştiren bir kart seçmek gerektiğinde oyun açıklamasını kontrol et. Bağlantı çalışsa da bu kararları henüz gerçek bir Steam koşusunda paket paket doğrulamadık.
 
 ## Windows
 
@@ -43,6 +43,6 @@ Bu sürümde kararlar basit kurallara dayanır. Joker tetiklerinin tamamı, Taro
 
 `mod/` içindeki küçük Steamodded eklentisi durumu yalnızca yerel `balatro_coach_state.json` dosyasına yazar. Python bu dosyayı okur ve yalnızca `127.0.0.1` üzerinde bir sayfa açar. Oyuna komut göndermez. Canlı okuma çalışmadığında elle shop değerlendirmesi ve Mac'te isteğe bağlı tooltip OCR kullanılabilir; OCR için ayrıca `brew install tesseract` gerekir.
 
-Öneriler shop'ta temel el uyumu ve ekonomiyi; elde normal poker eli, kart puanları, el seviyesi ve kalan blind hedefini kullanır. Discard önerisi yüksek kartı, mevcut çifti veya renk planını koruyan basit bir yaklaşımdır. Gösterilen **taban puan** Joker, geliştirme, edition, seal ve boss etkilerini içermez; kesin oyun skoru veya kazanma garantisi değildir. Kartları oyundaki sıraya göre 1. A♥, 2. J♦ biçiminde gösterir. El eğilimi yalnızca seviye yükseltilmiş eller, belirgin oyun geçmişi veya uygun Joker varsa gösterilir; yeni koşuda otomatik Pair hedefi atanmaz.
+Öneriler shop'ta el uyumu, Joker rollerini ve ekonomiyi; elde poker eli, kart puanları, el seviyesi, desteklenen Joker etkileri ve kalan blind hedefini kullanır. Discard önerisi kalan desteden olası çekilişleri örnekler. Gösterilen **tahmini puan** kesin oyun skoru veya kazanma garantisi değildir; bilinmeyen Joker, seal, boss ve tetikleme sırası sonucu değiştirebilir. Kartları oyundaki sıraya göre 1. A♥, 2. J♦ biçiminde gösterir. El eğilimi yalnızca seviye yükseltilmiş eller, belirgin oyun geçmişi veya uygun Joker varsa gösterilir; yeni koşuda otomatik Pair hedefi atanmaz.
 
 Katalog kart adları ve sınıflandırma işaretleri [oyun yerelleştirme verisinin bir aynasındaki](https://github.com/Jofr3/balatro-source/blob/main/localization/en-us.lua) adlardan türetildi. Mod yapısı için [Steamodded dokümantasyonu](https://docs.smods.dev/Guides/G/) kullanıldı.
